@@ -1,0 +1,159 @@
+#¿Cuál es el género principal de las 20 películas más recientes? ¿Cuál es el género principal que predomina en el conjunto de datos? Represéntelo usando un gráfico. ¿A qué género principal pertenecen las películas más largas?
+
+library(ggplot2)
+library(dplyr)
+library(nortest)
+library(scales)
+
+movies <- read.csv("Movies_2026.csv")
+
+
+tabla_freq <- function(col) {
+  as.data.frame(table(col), stringsAsFactors = FALSE) |>
+    setNames(c("genero", "frecuencia"))
+}
+genres  <- c("genres")
+
+# Obtener las 20 películas más recientes
+# example
+#head(df_1[order(df_1$budget, decreasing = TRUE),"title"], n  = 10)
+movies$releaseDate <- as.Date(movies$releaseDate, format = "%Y-%m-%d")
+peliculas_recientes <- movies[order(movies$releaseDate, decreasing = TRUE), ][1:20, ]
+movies_separated_recientes <- peliculas_recientes |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_recientes <- movies_separated_recientes[, genres]
+head(datos_generos_recientes, 5)
+
+lapply(datos_generos_recientes, tabla_freq)
+barplot(
+    table(datos_generos_recientes$genres),
+    main = "Frecuencia de géneros en las 20 películas más recientes",
+    xlab = "Género",
+    ylab = "Frecuencia",
+    col = "blue"
+)
+
+
+peliculas_runtime <- movies[order(movies$runtime, decreasing = TRUE), ][1:20, ]
+movies_separated_runtime <- peliculas_runtime |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_runtime <- movies_separated_runtime[, genres]
+head(datos_generos_runtime, 5)
+
+lapply(datos_generos_runtime, tabla_freq)
+barplot(
+    table(datos_generos_runtime$genres),
+    main = "Frecuencia de géneros en las 20 películas más largas",
+    xlab = "Género",
+    ylab = "Frecuencia",
+    col = "blue"
+)
+
+
+
+movies$releaseDate <- as.Date(movies_all$releaseDate, format = "%Y-%m-%d")
+
+movies_genres <- peliculas_runtime |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos <- movies_genres[, genres]
+head(datos_generos, 5)
+
+lapply(datos_generos, tabla_freq)
+barplot(
+    table(datos_generos$genres),
+    main = "Frecuencia de géneros",
+    xlab = "Género",
+    ylab = "Frecuencia",
+    col = "blue"
+)
+
+peliculas_revenue <- movies_all[order(movies_all$revenue, decreasing = TRUE), ][1:20, ]
+movies_separated_revenue <- peliculas_revenue |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_revenue <- movies_separated_revenue[, genres]
+head(datos_generos_revenue, 5) 
+
+lapply(datos_generos_revenue, tabla_freq)
+
+
+
+
+# ¿La cantidad de actores influye en los ingresos de las películas?¿se han hecho películas con más actores en los últimos años?
+
+number_of_actors <- movies |>
+  tidyr::separate_rows(actors, sep = "\\|") |>
+  group_by(title) |>
+  summarise(actorsAmount = n(), .groups = "drop")
+
+number_of_actors
+
+movies_with_actors <- movies |>
+  left_join(number_of_actors, by = "title")
+
+movies_with_actors
+
+# dispersión de cantidad de actores vs revenue
+ggplot(movies_with_actors, aes(x = actorsAmount.y, y = revenue)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores vs Ingresos de las Películas",
+       x = "Cantidad de Actores",
+       y = "Revenue") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+
+# cantidad de actores por año
+ggplot(movies_with_actors, aes(x = releaseYear, y = actorsAmount.y)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores por Año",
+       x = "Año de Lanzamiento",
+       y = "Cantidad de Actores") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+# cantidad de hombres vs revenue, mujeres vs revenue, hombres vs popularity, mujeres vs popularity
+
+ggplot(movies_with_actors, aes(x = revenue, y = castMenAmount)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores Hombre por revenue",
+       x = "Revenue",
+       y = "Cantidad de Actores Hombre") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+ggplot(movies_with_actors, aes(x = castWomenAmount, y = revenue)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores Mujer por revenue",
+       x = "Revenue",
+       y = "Cantidad de Actores Mujer") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+  ggplot(movies_with_actors, aes(x = castMenAmount, y = popularity)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores Hombre por popularity",
+       x = "Cantidad de Actores Hombre",
+       y = "Popularity") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+ggplot(movies_with_actors, aes(x = castWomenAmount, y = popularity)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores Mujer por popularity",
+       x = "Cantidad de Actores Mujer",
+       y = "Popularity") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+# 20 peliculas mejores calificadas por director
+
+top_rated_movies <- movies |>
+  arrange(desc(voteAvg)) |>
+  head(20)
+  select(director, title, voteAvg)

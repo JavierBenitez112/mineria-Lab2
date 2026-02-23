@@ -1,0 +1,63 @@
+``` {r setup stuff}
+library(nortest)
+
+movies <- read.csv("../datasets/Movies_2026.csv")
+```
+
+### 2. (5 puntos) Diga el tipo de cada una de las variables (cualitativa ordinal o nominal, cuantitativa continua, cuantitativa discreta)
+
+**Cualitativas**
+Adicionalmente en estas clasificaciones las variables Actors y ActorsCharacters serian clasificados como cualitativos nominales pero no se agregaron porque es necesario una limpieza de datos antes.
+
+```{r datos cualitativos}
+cual_nominales <- c(
+  "genres",
+  "homePage",
+  "productionCompany",
+  "productionCompanyCountry",
+  "productionCountry",
+  "video",
+  "director",
+  "originalTitle",
+  "title",
+  "originalLanguage"
+)
+
+cual_ordinales <- c(
+  "releaseDate"
+)
+
+cualitativas <- c(cual_nominales, cual_ordinales)
+cualitativas
+datos_cual <- movies[, cualitativas]
+# head(datos_cual, 5)
+```
+
+**Cuantitativas**
+Adicionalmente en estas clasificaciones la variable ActorsPopularity serian clasificados como cuantitativos continuos pero no se agregaron porque es necesario una limpieza de datos antes.
+
+```{r datos cuantitativos}
+cuant_discretas <- c(
+  "budget",
+  "revenue",
+  "runtime",
+  "voteAvg",
+  "voteCount",
+  "genresAmount",
+  "productionCoAmount",
+  "productionCountriesAmount",
+  "actorsAmount",
+  "castWomenAmount",
+  "castMenAmount",
+  "releaseYear"
+)
+
+cuant_continuas <- c(
+  "popularity"
+)
+
+cuantitativas <- c(cuant_discretas, cuant_continuas)
+cuantitativas
+datos_cuant <- movies[, cuantitativas]
+#head(datos_cuant, 5)
+```

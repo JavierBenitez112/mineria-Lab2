@@ -1,0 +1,104 @@
+---
+title: "Analisis Exploratorio"
+author: "Javier Benitez"
+date: "2026-02-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(nortest)
+
+movies <- read.csv("Movies_2026.csv")
+
+head(movies
+, 5)
+
+# Actors y Actors characters van aqui
+cual_nominales <- c(
+  "genres",
+  "homePage",
+  "productionCompany",
+  "productionCompanyCountry",
+  "productionCountry",
+  "video",
+  "director",
+  "originalTitle",
+  "title",
+  "originalLanguage"
+)
+
+cual_ordinales <- c(
+  "releaseDate"
+)
+
+
+cuant_discretas <- c(
+  "id",
+  "budget",
+  "revenue",
+  "runtime",
+  "voteAvg",
+  "voteCount",
+  "genresAmount",
+  "productionCoAmount",
+  "productionCountriesAmount",
+  "actorsAmount",
+  "castWomenAmount",
+  "castMenAmount",
+  "releaseYear"
+)
+
+# actors popularity va en cauantitativo de continuas
+cuant_continuas <- c(
+  "popularity"
+)
+
+cuantitativas <- c(cuant_discretas, cuant_continuas)
+cuantitativas
+datos_cuant <- movies[, cuantitativas]
+head(datos_cuant, 5)
+
+cualitativas <- c(cual_nominales, cual_ordinales)
+cualitativas
+datos_cual <- movies[, cualitativas]
+head(datos_cual, 5)
+
+lillie_results <- lapply(datos_cuant, lillie.test)
+lillie_results
+
+frec <- table(unlist(datos_cual))
+
+par(mar = c(5, 12, 4, 2))
+
+# Ciclo para graficar cada variable cualitativa por separado
+for (variable in cualitativas) {
+  
+  # 1. Crear tabla de frecuencia para la variable actual
+  tabla <- table(movies[[variable]])
+  
+  # 2. Ordenar de mayor a menor
+  tabla <- sort(tabla, decreasing = TRUE)
+  
+  # 3. Validar si son demasiados datos (ej. Titulos) para mostrar solo el Top 20
+  if (length(tabla) > 20) {
+    tabla_graficar <- tabla[1:20]
+    subtitulo <- "(Top 20 más frecuentes)"
+  } else {
+    tabla_graficar <- tabla
+    subtitulo <- "(Todos los valores)"
+  }
+  
+  # 4. Generar el gráfico
+  # Usamos 'horiz = TRUE' porque es más fácil leer nombres largos de lado
+  barplot(tabla_graficar,
+          main = paste("Variable:", variable, subtitulo),
+          col = "skyblue",
+          horiz = TRUE,      # Barras horizontales
+          las = 1,           # Las etiquetas siempre horizontales
+          cex.names = 0.6    # Tamaño de letra un poco más pequeño
+  )
+}
+```
+
+
+

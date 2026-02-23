@@ -1,0 +1,86 @@
+---
+title: "section-4"
+output: html_document
+---
+
+
+```{r}
+# dependecies
+#install.packages("dplyr")
+
+
+```
+
+1.  ¿Cuáles son las 10 películas que contaron con más presupuesto?
+
+```{r}
+
+
+df = read.csv("../datasets/Movies_2026.csv")
+
+df = na.omit(df)
+
+df_1 <- df[c('budget', 'title')]
+
+head(df_1[order(df_1$budget, decreasing = TRUE),"title"], n  = 10)
+
+```
+
+2.  ¿Cuáles son las 10 películas que más ingresos tuvieron?
+
+```{r}
+
+df_2 <- df[c('revenue', 'title')]
+
+head(df_2[order(df$revenue, decreasing = TRUE),],n = 10)
+
+
+```
+
+3.  ¿Cuál es la película que más votos tuvo?
+
+```{r}
+df_2 <- df[c('voteCount', 'title')]
+
+head(df_2[order(df$voteCount, decreasing = TRUE),], n = 1)
+  
+```
+
+4.  ¿Cuál es la peor película de acuerdo a los votos de todos los usuarios?
+
+```{r}
+
+df_2 <- df[c('voteAvg', 'title')]
+
+head(df_2[order(df$voteAvg, decreasing = FALSE),], n = 1)
+ 
+
+```
+
+
+5. ¿Cuántas películas se hicieron en cada año? ¿En qué año se hicieron más películas? Haga un gráfico de barras 
+
+```{r}
+
+library(dplyr)
+
+year_count <- count(df,df$releaseYear)
+
+barplot(year_count$n, names.arg = year_count$`df$releaseYear`)
+
+
+head(year_count[order(year_count$n, decreasing = TRUE),],n = 1)
+
+
+
+```
+
+La grafica esta orenado desde los 30's hasta los 20's, siendo cada barra su a~no especifico, viendo la grafica podemos darnos cuenta como el a~no con mas cantidad de peliculas es el 2025.
+
+
+
+
+
+
+
+

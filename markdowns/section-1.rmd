@@ -1,0 +1,26 @@
+---
+title: "Lab-1 - Seccion 1"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+- Haga una exploración rápida de sus datos, para eso haga un resumen de su conjunto de datos.
+
+
+```{r}
+movies_df <- read.csv("../datasets/Movies_2026.csv")
+
+str(movies_df)
+```
+
+  - Al momento de usar ```str()```, nos podemos hacer una idea de como son los datos en todo el dataset, este analisis se hace luego en el proyecto (en especifico en el inciso 2). Como nos podemos dar cuenta varios de estos campos llegan a tener informacion vacia para su tipo de dato respectivo.
+  
+```{r}
+
+movies_df <- subset(movies_df, select = -id) # we ain't going to summarize the the id for pretty obvious reasons
+summary(movies_df)
+```
+
+
+  - Al resumirlos no podemos agarrar informacion tan relevante para hacer cualquier tipo de analisis ademas de algunos valores numericos en dichos campos. Como ver cantidad de ingresos maximos y medios, prespuesto y ganancia por peliculas. No llega a ser informacion tan valiosa solo viendola de por si, ya que son datos generales entre todas y no de una solo empresa o por el estilo (se puede 'queriear' para lograrlo, pero ese no es el caso).

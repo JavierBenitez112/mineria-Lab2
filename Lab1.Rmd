@@ -1,0 +1,538 @@
+---
+title: "Lab Analisis Exploratorio"
+author: "Pedro Avila, Javier Benitez, Brandon Rivera"
+date: "2026-02-07"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r dependencies}
+# dependecies
+#install.packages("dplyr")
+```
+
+## Librerias
+
+``` {r librarys}
+library(ggplot2)
+library(dplyr)
+library(nortest)
+library(scales)
+library(lubridate)
+```
+
+## Inciso 1
+- Haga una exploración rápida de sus datos, para eso haga un resumen de su conjunto de datos.
+
+```{r}
+movies <- read.csv("Movies_2026.csv")
+
+str(movies)
+```
+
+  - Al momento de usar ```str()```, nos podemos hacer una idea de como son los datos en todo el dataset, este analisis se hace luego en el proyecto (en especifico en el inciso 2). Como nos podemos dar cuenta varios de estos campos llegan a tener informacion vacia para su tipo de dato respectivo.
+  
+```{r}
+
+movies <- subset(movies, select = -id) # we ain't going to summarize the the id for pretty obvious reasons
+summary(movies)
+```
+
+
+  - Al resumirlos no podemos agarrar informacion tan relevante para hacer cualquier tipo de analisis ademas de algunos valores numericos en dichos campos. Como ver cantidad de ingresos maximos y medios, prespuesto y ganancia por peliculas. No llega a ser informacion tan valiosa solo viendola de por si, ya que son datos generales entre todas y no de una solo empresa o por el estilo (se puede 'queriear' para lograrlo, pero ese no es el caso).
+  
+## Inciso 2
+  - Diga el tipo de cada una de las variables (cualitativa ordinal o nominal, cuantitativa continua, cuantitativa discreta)
+
+**Cualitativas**
+Adicionalmente en estas clasificaciones las variables Actors y ActorsCharacters serian clasificados como cualitativos nominales pero no se agregaron porque es necesario una limpieza de datos antes.
+
+```{r datos cualitativos}
+cual_nominales <- c(
+  "genres",
+  "homePage",
+  "productionCompany",
+  "productionCompanyCountry",
+  "productionCountry",
+  "video",
+  "director",
+  "originalTitle",
+  "title",
+  "originalLanguage"
+)
+
+cual_ordinales <- c(
+  "releaseDate"
+)
+
+cualitativas <- c(cual_nominales, cual_ordinales)
+cualitativas
+datos_cual <- movies[, cualitativas]
+head(datos_cual, 5)
+```
+
+**Cuantitativas**
+Adicionalmente en estas clasificaciones la variable ActorsPopularity serian clasificados como cuantitativos continuos pero no se agregaron porque es necesario una limpieza de datos antes.
+
+```{r datos cuantitativos}
+cuant_discretas <- c(
+  "budget",
+  "revenue",
+  "runtime",
+  "voteAvg",
+  "voteCount",
+  "genresAmount",
+  "productionCoAmount",
+  "productionCountriesAmount",
+  "actorsAmount",
+  "castWomenAmount",
+  "castMenAmount",
+  "releaseYear"
+)
+
+cuant_continuas <- c(
+  "popularity"
+)
+
+cuantitativas <- c(cuant_discretas, cuant_continuas)
+cuantitativas
+datos_cuant <- movies[, cuantitativas]
+head(datos_cuant, 5)
+```
+
+## Inciso 3
+  - Investigue si las variables cuantitativas siguen una distribución normal y haga una
+tabla de frecuencias de las variables cualitativas. Explique todos los resultados.
+
+```{r inciso3}
+lillie_results <- lapply(datos_cuant, lillie.test)
+lillie_results
+
+frec <- table(unlist(datos_cual))
+
+par(mar = c(5, 12, 4, 2))
+
+# Ciclo para graficar cada variable cualitativa por separado
+for (variable in cualitativas) {
+  
+  # 1. Crear tabla de frecuencia para la variable actual
+  tabla <- table(movies[[variable]])
+  
+  # 2. Ordenar de mayor a menor
+  tabla <- sort(tabla, decreasing = TRUE)
+  
+  # 3. Validar si son demasiados datos (ej. Titulos) para mostrar solo el Top 20
+  if (length(tabla) > 20) {
+    tabla_graficar <- tabla[1:20]
+    subtitulo <- "(Top 20 más frecuentes)"
+  } else {
+    tabla_graficar <- tabla
+    subtitulo <- "(Todos los valores)"
+  }
+  
+  # 4. Generar el gráfico
+  # Usamos 'horiz = TRUE' porque es más fácil leer nombres largos de lado
+  barplot(tabla_graficar,
+          main = paste("Variable:", variable, subtitulo),
+          col = "skyblue",
+          horiz = TRUE,      # Barras horizontales
+          las = 1,           # Las etiquetas siempre horizontales
+          cex.names = 0.6    # Tamaño de letra un poco más pequeño
+  )
+}
+```
+
+## Inciso 4
+
+
+
+### 1.  ¿Cuáles son las 10 películas que contaron con más presupuesto?
+
+```{r}
+
+movies = na.omit(movies )
+
+df_1 <- movies[c('budget', 'title')]
+
+head(df_1[order(df_1$budget, decreasing = TRUE),"title"], n  = 10)
+
+```
+
+
+
+### 2.  ¿Cuáles son las 10 películas que más ingresos tuvieron?
+
+```{r}
+
+df_2 <- movies[c('revenue', 'title')]
+
+head(df_2[order(movies$revenue, decreasing = TRUE),],n = 10)
+
+
+```
+
+
+
+### 3.  ¿Cuál es la película que más votos tuvo?
+
+```{r}
+df_2 <- movies[c('voteCount', 'title')]
+
+head(df_2[order(movies$voteCount, decreasing = TRUE),], n = 1)
+  
+```
+
+
+
+### 4.  ¿Cuál es la peor película de acuerdo a los votos de todos los usuarios?
+
+```{r}
+
+df_2 <- movies[c('voteAvg', 'title')]
+
+head(df_2[order(movies$voteAvg, decreasing = FALSE),], n = 1)
+ 
+
+```
+
+
+
+### 5. ¿Cuántas películas se hicieron en cada año? ¿En qué año se hicieron más películas? Haga un gráfico de barras 
+
+```{r}
+
+library(dplyr)
+
+year_count <- count(movies,movies$releaseYear)
+
+barplot(year_count$n, names.arg = year_count$`movies$releaseYear`)
+
+
+head(year_count[order(year_count$n, decreasing = TRUE),],n = 1)
+
+
+
+```
+
+La grafica esta orenado desde los 30's hasta los 20's, siendo cada barra su a~no especifico, viendo la grafica podemos darnos cuenta como el a~no con mas cantidad de peliculas es el 2025.
+
+
+
+### 6. ¿Cuál es el género principal de las 20 películas más recientes? ¿Cuál es el género principal que predomina en el conjunto de datos? Represéntelo usando un gráfico. ¿A qué género principal pertenecen las películas más largas?
+```{r genres}
+tabla_freq <- function(col) {
+  as.data.frame(table(col), stringsAsFactors = FALSE) |>
+    setNames(c("genero", "frecuencia"))
+}
+genres  <- c("genres")
+
+movies$releaseDate <- as.Date(movies$releaseDate, format = "%Y-%m-%d")
+
+
+peliculas_recientes <- movies[order(movies$releaseDate, decreasing = TRUE), ][1:20, ]
+movies_separated_recientes <- peliculas_recientes |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_recientes <- movies_separated_recientes[, genres]
+#head(datos_generos_recientes, 5)
+
+lapply(datos_generos_recientes, tabla_freq)
+barplot(
+    table(datos_generos_recientes$genres),
+    main = "Frecuencia de géneros en las 20 películas más recientes",
+    xlab = "Género",
+    ylab = "Frecuencia",
+    col = "blue"
+)
+
+
+peliculas_runtime <- movies[order(movies$runtime, decreasing = TRUE), ][1:20, ]
+movies_separated_runtime <- peliculas_runtime |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_runtime <- movies_separated_runtime[, genres]
+head(datos_generos_runtime, 5)
+
+lapply(datos_generos_runtime, tabla_freq)
+barplot(
+    table(datos_generos_runtime$genres),
+    main = "Frecuencia de géneros en las 20 películas más largas",
+    xlab = "Género",
+    ylab = "Frecuencia",
+    col = "blue"
+)
+
+movies_genres <- peliculas_runtime |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos <- movies_genres[, genres]
+head(datos_generos, 5)
+
+lapply(datos_generos, tabla_freq)
+barplot(
+    table(datos_generos$genres),
+    main = "Frecuencia de géneros",
+    xlab = "Género",
+    ylab = "Frecuencia",
+    col = "blue"
+)
+```
+
+
+
+### 7. ¿Las películas de qué genero principal obtuvieron mayores ganancias?
+```{r revenue}
+peliculas_revenue <- movies[order(movies$revenue, decreasing = TRUE), ][1:20, ]
+movies_separated_revenue <- peliculas_revenue |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_revenue <- movies_separated_revenue[, genres]
+head(datos_generos_revenue, 5) 
+
+lapply(datos_generos_revenue, tabla_freq)
+```
+
+
+
+### 8. ¿La cantidad de actores influye en los ingresos de las películas?¿se han hecho películas con más actores en los últimos años?
+```{r actors revenue}
+number_of_actors <- movies |>
+  tidyr::separate_rows(actors, sep = "\\|") |>
+  group_by(title) |>
+  summarise(actorsAmount = n(), .groups = "drop")
+
+#number_of_actors
+
+movies_with_actors <- movies |>
+  left_join(number_of_actors, by = "title")
+
+head(movies_with_actors,5)
+
+# dispersión de cantidad de actores vs revenue
+ggplot(movies_with_actors, aes(x = actorsAmount.y, y = revenue)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores vs Ingresos de las Películas",
+       x = "Cantidad de Actores",
+       y = "Revenue") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+
+# cantidad de actores por año
+ggplot(movies_with_actors, aes(x = releaseYear, y = actorsAmount.y)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores por Año",
+       x = "Año de Lanzamiento",
+       y = "Cantidad de Actores") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+```
+
+Estas graficas no siguen una forma de relacion lineal, al mismo tiempo no cuenta con subidas ni bajas entonces se podria concluir que no hay relacion entre cantidad de catores contra ingresos o cantidad de actores contra años
+
+
+
+### 9. ¿Es posible que la cantidad de hombres y mujeres en el reparto influya en la popularidad y los ingresos de las películas?
+``` {r hombres vs mujeres}
+ggplot(movies_with_actors, aes(x = revenue, y = castMenAmount)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores Hombre por revenue",
+       x = "Revenue",
+       y = "Cantidad de Actores Hombre") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+ggplot(movies_with_actors, aes(x = castWomenAmount, y = revenue)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores Mujer por revenue",
+       x = "Revenue",
+       y = "Cantidad de Actores Mujer") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+  ggplot(movies_with_actors, aes(x = castMenAmount, y = popularity)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores Hombre por popularity",
+       x = "Cantidad de Actores Hombre",
+       y = "Popularity") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+ggplot(movies_with_actors, aes(x = castWomenAmount, y = popularity)) +
+  geom_point(na.rm = TRUE) +
+  labs(title = "Cantidad de Actores Mujer por popularity",
+       x = "Cantidad de Actores Mujer",
+       y = "Popularity") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+```
+
+De la misma forma que el inciso anterior ninguna de las graficas sigue una forma de relacion lineal entonces se podria asumir que no hay relacion, por otro lado esto tambien puede ser por data incompleta o mal formateada.
+
+
+
+### 10. ¿Quiénes son los directores que hicieron las 20 películas mejor calificadas?
+```{r best rated directors}
+top_rated_movies <- movies |>
+  arrange(desc(voteAvg)) |>
+  head(20) |>
+  select(director, title, voteAvg)
+
+top_rated_movies
+```
+
+
+
+### 11.¿Cómo se correlacionan los presupuestos con los ingresos? ¿Los altos presupuestos significan altos ingresos?
+
+En este caso como se puede observar en la grafica hay muchos datos irregulares que no siguen ninguna tendecia evidente por lo que se puede decir que entre estos 2 datos los presupuestos e ingresos no estan relacionados directamente
+
+```{r}
+with(movies, plot(budget,revenue))
+```
+
+
+
+### 12. ¿Se asocian ciertos meses de lanzamiento con mejores ingresos?
+
+Si como se puede observar en la grafica si hay ciertos meses en los que hay lanzamientos que obtienen mas ingresos a diferencia de los otros meses entonces los mejores meses para lanzar una pelicula es en Julio y en Diciembre
+
+
+```{r}
+movies$releaseDate <- as.Date(movies$releaseDate)
+movies$mes <- month(movies$releaseDate, label = TRUE, abbr = TRUE)
+
+df_mensual <- movies %>%
+  group_by(mes) %>%
+  summarize(total_revenue = sum(revenue, na.rm = TRUE))
+
+ggplot(df_mensual, aes(x = mes, y = total_revenue, group = 1)) +
+  geom_area(fill = "steelblue", alpha = 0.3) + 
+  geom_line(color = "steelblue", linewidth = 1) + 
+  geom_point(color = "steelblue", size = 2) +
+  labs(
+    title = "Evolución de Ingresos por Mes de Lanzamiento",
+    subtitle = "Tendencia estacional de ingresos totales",
+    x = "Mes",
+    y = "Ingresos Totales (Suma)"
+  ) +
+  theme_minimal()
+```
+
+
+
+### 13. ¿En qué meses se han visto los lanzamientos con mejores ingresos?¿cuantas películas, en promedio, se han lanzado por mes?
+
+Junio es el mes con mejores ingresos y en promedio se lanzan 25.23 peliculas por mes.
+
+```{r}
+
+movies_clean <- movies %>%
+  mutate(
+    date = as.Date(releaseDate),
+    mes = month(date, label = TRUE, abbr = TRUE),
+    anio = year(date)
+  ) %>%
+  filter(!is.na(mes))
+
+conteo_mensual <- movies_clean %>%
+  group_by(anio, mes) %>%
+  summarise(n_pelis = n(), revenue_total = sum(revenue, na.rm = TRUE), .groups = "drop")
+
+metricas_finales <- conteo_mensual %>%
+  group_by(mes) %>%
+  summarise(
+    promedio_lanzamientos = mean(n_pelis),
+    ingresos_totales = sum(revenue_total)
+  )
+
+g1 <- ggplot(metricas_finales, aes(x = mes, y = ingresos_totales, fill = ingresos_totales)) +
+  geom_col() +
+  scale_fill_viridis_c(option = "magma", guide = "none") +
+  labs(title = "Meses con Mejores Ingresos", y = "Ingresos Totales", x = "") +
+  theme_minimal()
+
+g2 <- ggplot(metricas_finales, aes(x = mes, y = promedio_lanzamientos)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = round(promedio_lanzamientos, 1)), 
+            vjust = -0.5, size = 3.5) +
+  labs(
+    title = "Promedio de Películas Lanzadas por Mes",
+    subtitle = "¿Cuántas películas se estrenan realmente en un mes típico?",
+    x = "Mes",
+    y = "Cant. Promedio de Estrenos"
+  ) +
+  theme_minimal()
+
+print(g1)
+print(g2)
+```
+
+
+
+### 14. ¿Cómo se correlacionan las calificaciones con el éxito comercial?
+
+Las peliculas entre los 7.5 de calificacion son las peliculas que mas ingresos tienen pero hay muchas peliculas que son un 10 total pero que no generaron apenas ingresos y de igual manera peliculas con una puntuacion de 7.5 podrian no haber generado ningun ingreso no es garantizado un gran ingreso pero si es mas probable
+
+```{r}
+ggplot(movies, aes(x = voteAvg, y = revenue)) +
+  geom_point(color = "steelblue", alpha = 0.6, size = 3) +
+  
+  geom_smooth(method = "lm", color = "darkred", se = TRUE) +
+  
+  labs(
+    title = "Correlación: Calificaciones vs. Éxito Comercial",
+    subtitle = "Análisis de impacto de las reseñas en los ingresos",
+    x = "Calificación (0-10)",
+    y = "Ingresos Totales ($)",
+    caption = "Fuente: Datos simulados"
+  ) +
+  theme_minimal()
+```
+
+
+
+### 15. ¿Qué estrategias de marketing, como videos promocionales o páginas oficiales, generan mejores resultados?
+
+Las peliculas con pagina oficial tienen mas revenue por ende el sitio web es mejor estrategia
+
+```{r}
+peliculas_clean <- movies %>%
+  mutate(
+    tiene_web = ifelse(!is.na(homePage) & homePage != "", "Con Página Oficial", "Sin Página Oficial"),
+
+    tiene_video = ifelse(video == TRUE, "Con Video Promo", "Sin Video Promo")
+  )
+
+ggplot(peliculas_clean, aes(x = tiene_web, y = revenue, fill = tiene_video)) +
+  
+  geom_boxplot(alpha = 0.7) +
+  
+  scale_y_log10(labels = scales::dollar_format()) +
+  
+  labs(
+    title = "Impacto de la Página Web y Video en Ingresos",
+    subtitle = "¿Vale la pena invertir en sitio web y trailer?",
+    x = "Presencia de Sitio Web",
+    y = "Ingresos (Escala Log)",
+    fill = "Video Promocional"
+  ) +
+  theme_minimal()
+```
+
+
+
+### 16. ¿La popularidad del elenco está directamente correlacionada con el éxito de taquilla?
+
+```{r}
+  with(movies, plot(revenue,actorsPopularity))
+```
+
+No como se puede ver en esta grafica no esta directamente relacionada la popularidad de un actor con el ingreso de la pelicula
