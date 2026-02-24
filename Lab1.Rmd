@@ -24,11 +24,10 @@ library(dplyr)
 library(nortest)
 library(scales)
 library(lubridate)
-library(psych)
-library(REdaS)
-library(grid)
-library(corrplot)
+library(cluster)
 library(factoextra)
+library(dplyr)
+library(ggplot2)
 ```
 
 ## Inciso 1
@@ -110,188 +109,6 @@ datos_cuant <- movies[, cuantitativas]
 head(datos_cuant, 5)
 ```
 
-
-# PCA
-
-
-## Paso 0 - Análisis de viabilidad
-
-### KMO
-
-```{r}
-datos_cuant_clean <- datos_cuant[, sapply(datos_cuant, is.numeric)]
-datos_cuant_clean <- na.omit(datos_cuant_clean)
-KMO(datos_cuant_clean)
-```
-
-### Esfericidad de Bartlett
-
-```{r}
-bart_spher(datos_cuant_clean)
-```
-
-## Visualización de correlaciones
-
-```{r}
-matriz <- cor(datos_cuant_clean, use = "pairwise.complete.obs")
-corrplot(matriz,
-         method = "color",
-         type = "upper",
-         addCoef.col = "black",
-         tl.col = "black",
-         tl.srt = 45)
-```
-
-## Paso 1 - Estandarización
-
-```{r}
-datos_std <- scale(datos_cuant_clean)
-apply(datos_std, 2, mean)
-apply(datos_std, 2, sd)
-```
-
-## Paso 2 - PCA
-
-```{r}
-compPrinc <- prcomp(datos_std)
-summary(compPrinc)
-```
-
-## Scree Plot
-
-```{r}
-fviz_eig(compPrinc)
-```
-
-
-## Visualización de variables
-
-```{r}
-fviz_pca_var(compPrinc,
-             col.var = "cos2",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Inciso 3
   - Investigue si las variables cuantitativas siguen una distribución normal y haga una
 tabla de frecuencias de las variables cualitativas. Explique todos los resultados.
@@ -333,7 +150,6 @@ for (variable in cualitativas) {
   )
 }
 ```
-
 
 ## Inciso 4
 
@@ -726,4 +542,319 @@ ggplot(peliculas_clean, aes(x = tiene_web, y = revenue, fill = tiene_video)) +
 No como se puede ver en esta grafica no esta directamente relacionada la popularidad de un actor con el ingreso de la pelicula
 
 
+## Análisis de Clustering
+
+### Preparación de datos
+```{r cluster_prep}
+require(cluster)
+require(factoextra)
+require(dplyr)
+require(ggplot2)
+
+# Selección de variables numéricas relevantes
+vars_cluster <- c("budget", "revenue", "popularity", "voteAvg", "voteCount", "runtime")
+
+# Eliminar NAs y duplicados
+d2f_raw <- na.omit(movies[, c("title", vars_cluster)])
+d2f_raw <- d2f_raw[!duplicated(d2f_raw$title), ]
+
+# Escalar datos
+d2f <- as.data.frame(scale(d2f_raw[, vars_cluster]))
+rownames(d2f) <- d2f_raw$title
+
+cat("Títulos duplicados:", sum(duplicated(rownames(d2f))), "\n")
+cat("Filas totales:", nrow(d2f), "\n")
+```
+
+---
+
+### Parte 1 – Determinación del número óptimo de clusters
+```{r optimal_k_elbow}
+# Método del Codo: busca el punto donde agregar más clusters ya no reduce 
+# significativamente la varianza interna (WSS)
+fviz_nbclust(d2f, pam, method = "wss") +
+  geom_vline(xintercept = 3, linetype = "dashed", color = "red") +
+  labs(
+    title    = "Método del Codo (WSS) – PAM",
+    subtitle = "El 'codo' indica el k óptimo donde la reducción de WSS se estabiliza",
+    x        = "Número de Clusters (k)",
+    y        = "Suma de cuadrados intra-cluster"
+  ) +
+  theme_bw()
+```
+
+
+```{r optimal_k_silhouette}
+# Método de Silueta: mide qué tan bien separados están los clusters
+# Un valor cercano a 1 = clusters bien definidos; cercano a 0 = solapados
+fviz_nbclust(d2f, pam, method = "silhouette") +
+  labs(
+    title    = "Método de Silueta – PAM",
+    subtitle = "El k con mayor ancho de silueta promedio es el óptimo",
+    x        = "Número de Clusters (k)",
+    y        = "Ancho de Silueta Promedio"
+  ) +
+  theme_bw()
+```
+```{r optimal_k_gap}
+# Método Gap Statistic: compara la dispersión interna observada contra 
+# una distribución de referencia aleatoria
+set.seed(123)
+gap_stat <- clusGap(d2f, FUN = pam, K.max = 10, B = 50)
+
+fviz_gap_stat(gap_stat) +
+  labs(
+    title    = "Gap Statistic – PAM",
+    subtitle = "El k óptimo es donde Gap(k) es máximo o donde se estabiliza",
+    x        = "Número de Clusters (k)",
+    y        = "Gap Statistic"
+  ) +
+  theme_bw()
+
+k_optimo_gap <- which.max(gap_stat$Tab[, "gap"])
+cat("K óptimo según Gap Statistic:", k_optimo_gap, "\n")
+```
+```{r silhouette_scores_table}
+# Tabla comparativa de ancho de silueta por k
+sil_scores <- sapply(2:8, function(k) {
+  round(mean(pam(d2f, k)$silinfo$avg.width), 4)
+})
+
+sil_tabla <- data.frame(
+  k              = 2:8,
+  Silhouette     = sil_scores,
+  Interpretacion = ifelse(sil_scores >= 0.70, "Estructura fuerte",
+                   ifelse(sil_scores >= 0.50, "Estructura razonable",
+                   ifelse(sil_scores >= 0.25, "Estructura débil", "Sin estructura")))
+)
+
+print(sil_tabla)
+
+k_final <- sil_tabla$k[which.max(sil_tabla$Silhouette)]
+cat("\nK seleccionado para el análisis:", k_final, "\n")
+cat("Ancho de silueta promedio:", max(sil_tabla$Silhouette), "\n")
+```
+
+---
+
+### Parte 2 – Agrupamiento con múltiples algoritmos y comparación
+```{r kmeans_clustering}
+# Algoritmo 1: K-Means
+set.seed(123)
+km_res <- kmeans(d2f, centers = k_final, nstart = 25, iter.max = 100)
+
+p_kmeans <- fviz_cluster(km_res, data = d2f,
+               geom         = "point",
+               ellipse.type = "norm",
+               palette      = "Set2",
+               alpha        = 0.6) +
+  labs(
+    title    = "K-Means",
+    subtitle = paste("k =", k_final)
+  ) +
+  theme_bw()
+
+print(p_kmeans)
+```
+```{r pam_clustering}
+# Algoritmo 2: PAM (K-Medoids) – más robusto a outliers que K-Means
+pam.res <- pam(d2f, k_final)
+
+p_pam <- fviz_cluster(pam.res,
+               geom             = "point",
+               ellipse.type     = "norm",
+               show.clust.cent  = TRUE,
+               star.plot        = TRUE,
+               palette          = "Set2") +
+  labs(
+    title    = "PAM (K-Medoids)",
+    subtitle = paste("k =", k_final)
+  ) +
+  theme_bw()
+
+print(p_pam)
+```
+```{r hierarchical_clustering}
+# Algoritmo 3: Clustering Jerárquico (Ward)
+dist_matrix <- dist(d2f, method = "euclidean")
+hc_res      <- hclust(dist_matrix, method = "ward.D2")
+
+# Dendrograma
+plot(hc_res, labels = FALSE, hang = -1,
+     main = "Dendrograma – Clustering Jerárquico (Ward)",
+     xlab = "Películas",
+     ylab = "Distancia")
+rect.hclust(hc_res, k = k_final, border = 2:(k_final + 1))
+
+hc_clusters <- cutree(hc_res, k = k_final)
+```
+```{r quality_comparison}
+# Comparación de calidad mediante Silueta
+sil_km  <- silhouette(km_res$cluster,  dist(d2f))
+sil_pam <- silhouette(pam.res$cluster, dist(d2f))
+sil_hc  <- silhouette(hc_clusters,     dist(d2f))
+
+calidad <- data.frame(
+  Algoritmo           = c("K-Means", "PAM (K-Medoids)", "Jerárquico (Ward)"),
+  Silhouette_Promedio = round(c(
+    mean(sil_km[, 3]),
+    mean(sil_pam[, 3]),
+    mean(sil_hc[, 3])
+  ), 4),
+  Clusters = k_final
+)
+
+print(calidad)
+
+# Gráficos de silueta individuales
+par(mfrow = c(1, 3))
+plot(sil_km,  main = "Silueta K-Means",    col = 2:(k_final + 1), border = NA)
+plot(sil_pam, main = "Silueta PAM",        col = 2:(k_final + 1), border = NA)
+plot(sil_hc,  main = "Silueta Jerárquico", col = 2:(k_final + 1), border = NA)
+par(mfrow = c(1, 1))
+
+# Algoritmo ganador
+mejor_algoritmo <- calidad$Algoritmo[which.max(calidad$Silhouette_Promedio)]
+cat("\nAlgoritmo con mejor calidad de clusters:", mejor_algoritmo, "\n")
+```
+
+---
+
+### Parte 3 – Interpretación de los grupos
+```{r cluster_assignment}
+# Asignar cluster PAM al dataframe original (sin escalar)
+d2f_raw$cluster <- as.factor(pam.res$cluster)
+```
+```{r cluster_medidas_tendencia}
+# Medidas de tendencia central por cluster
+perfil <- d2f_raw %>%
+  group_by(cluster) %>%
+  summarise(
+    n_peliculas    = n(),
+    budget_media   = round(mean(budget,     na.rm = TRUE), 0),
+    budget_mediana = round(median(budget,   na.rm = TRUE), 0),
+    revenue_media  = round(mean(revenue,    na.rm = TRUE), 0),
+    revenue_mediana= round(median(revenue,  na.rm = TRUE), 0),
+    pop_media      = round(mean(popularity, na.rm = TRUE), 2),
+    voteAvg_media  = round(mean(voteAvg,    na.rm = TRUE), 2),
+    voteCount_media= round(mean(voteCount,  na.rm = TRUE), 0),
+    runtime_media  = round(mean(runtime,    na.rm = TRUE), 1)
+  )
+
+print(perfil)
+```
+```{r cluster_boxplots}
+# Boxplots comparativos por cluster para cada variable
+for (v in vars_cluster) {
+  p <- ggplot(d2f_raw, aes_string(x = "cluster", y = v, fill = "cluster")) +
+    geom_boxplot(alpha = 0.7, outlier.color = "red", outlier.size = 1) +
+    scale_fill_brewer(palette = "Set2") +
+    labs(
+      title    = paste("Distribución de", v, "por Cluster"),
+      subtitle = "Los outliers en rojo representan películas atípicas dentro del grupo",
+      x        = "Cluster",
+      y        = v
+    ) +
+    theme_bw() +
+    theme(legend.position = "none")
+  print(p)
+}
+```
+```{r cluster_freq_genres}
+# Tabla de frecuencia de géneros por cluster
+movies_con_cluster <- movies %>%
+  filter(title %in% d2f_raw$title) %>%
+  left_join(d2f_raw[, c("title", "cluster")], by = "title") %>%
+  tidyr::separate_rows(genres, sep = "\\|")
+
+tabla_generos <- movies_con_cluster %>%
+  group_by(cluster, genres) %>%
+  summarise(frecuencia = n(), .groups = "drop") %>%
+  arrange(cluster, desc(frecuencia))
+
+# Top 5 géneros por cluster
+top_generos <- tabla_generos %>%
+  group_by(cluster) %>%
+  slice_max(frecuencia, n = 5)
+
+print(top_generos)
+
+# Gráfico de géneros por cluster
+ggplot(top_generos, aes(x = reorder(genres, frecuencia), y = frecuencia, fill = cluster)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~cluster, scales = "free_y") +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title    = "Top 5 Géneros por Cluster",
+    subtitle = "Distribución de géneros dentro de cada grupo de películas",
+    x        = "Género",
+    y        = "Frecuencia"
+  ) +
+  theme_bw()
+```
+```{r cluster_top_movies}
+# Películas medoides: las más representativas de cada cluster
+medoides_idx      <- pam.res$id.med
+peliculas_medoides <- d2f_raw[medoides_idx, c("title", "cluster", vars_cluster)]
+
+cat("=== Películas Medoides (más representativas de cada cluster) ===\n")
+print(peliculas_medoides)
+```
+```{r cluster_perfil_comparativo}
+# Perfil normalizado para comparación visual entre clusters
+perfil_norm <- perfil %>%
+  select(cluster, budget_media, revenue_media, pop_media, voteAvg_media, runtime_media) %>%
+  mutate(across(-cluster, ~ round((. - min(.)) / (max(.) - min(.)), 4)))
+
+cat("=== Perfil normalizado de clusters (0 = mínimo, 1 = máximo) ===\n")
+print(perfil_norm)
+
+# Gráfico comparativo de perfiles
+perfil_long <- perfil_norm %>%
+  tidyr::pivot_longer(-cluster, names_to = "variable", values_to = "valor")
+
+ggplot(perfil_long, aes(x = variable, y = valor, fill = cluster)) +
+  geom_col(position = "dodge", alpha = 0.8) +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    title    = "Perfil Comparativo de Clusters (valores normalizados)",
+    subtitle = "Permite identificar en qué dimensiones se diferencia cada grupo",
+    x        = "Variable",
+    y        = "Valor Normalizado (0–1)",
+    fill     = "Cluster"
+  ) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+```{r cluster_scatter_revenue_budget}
+# Dispersión revenue vs budget coloreado por cluster
+ggplot(d2f_raw, aes(x = budget, y = revenue, color = cluster)) +
+  geom_point(alpha = 0.6, size = 2) +
+  scale_color_brewer(palette = "Set2") +
+  scale_x_continuous(labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(
+    title    = "Budget vs Revenue por Cluster",
+    subtitle = "Cada color representa un grupo de películas con características similares",
+    x        = "Presupuesto (Budget)",
+    y        = "Ingresos (Revenue)",
+    color    = "Cluster"
+  ) +
+  theme_bw()
+```
+```{r cluster_scatter_popularity_vote}
+# Dispersión popularity vs voteAvg coloreado por cluster
+ggplot(d2f_raw, aes(x = popularity, y = voteAvg, color = cluster)) +
+  geom_point(alpha = 0.6, size = 2) +
+  scale_color_brewer(palette = "Set2") +
+  labs(
+    title    = "Popularidad vs Calificación Promedio por Cluster",
+    subtitle = "¿Los clusters más populares también son los mejor calificados?",
+    x        = "Popularidad",
+    y        = "Calificación Promedio (voteAvg)",
+    color    = "Cluster"
+  ) +
+  theme_bw()
+```
 
