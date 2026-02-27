@@ -1,5 +1,5 @@
 ---
-title: "Lab Analisis Exploratorio"
+title: "Lab Aprendizaje No Supervisado: Clustering, PCA y Algoritmo A Priori"
 author: "Pedro Avila, Javier Benitez, Brandon Rivera"
 date: "2026-02-07"
 output:
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #install.packages("dplyr")
 ```
 
-## Librerias
+# Librerias
 
 ``` {r librarys}
 library(ggplot2)
@@ -26,9 +26,11 @@ library(scales)
 library(lubridate)
 library(cluster)
 library(factoextra)
+library(arules)
+library(arulesViz)
 ```
 
-## Exploracion de datos
+# Exploracion de datos
 - Una exploración rápida de sus datos, para eso haga un resumen de su conjunto de datos.
 
 ```{r}
@@ -106,6 +108,8 @@ cuantitativas
 datos_cuant <- movies[, cuantitativas]
 head(datos_cuant, 5)
 ```
+
+
 
 # Análisis de Clustering
 
@@ -483,3 +487,26 @@ fviz_pca_var(compPrinc,
 
 # Algoritmo A Priori
 
+## Paso 1: Contexto y Objetivo
+
+## Paso 2: Items mas frecuentes
+
+## Paso 3: Conjunto de Items frecuentes
+
+## Paso 4: Análisis del soporte de los conjuntos
+
+## Paso 5: Generación de reglas de asociación
+
+## Paso 6: Soporte, confianza y lift
+
+## Paso 7: Filtrado de reglas relevantes
+
+## Paso 8: Visualización de resultados
+
+
+
+# Seleccion de Algoritmo de Aprendizaje no supervisado
+
+# Aprendizaje no supervisado: SVG
+
+# Conclusiones

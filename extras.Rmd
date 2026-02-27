@@ -9,10 +9,50 @@
 
 
 
+## Procesamiento de datos
+```{r procesamiento}
+peliculas_recientes <- movies[order(movies$releaseDate, decreasing = TRUE), ][1:20, ]
+movies_separated_recientes <- peliculas_recientes |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_recientes <- movies_separated_recientes[, genres]
 
+peliculas_runtime <- movies[order(movies$runtime, decreasing = TRUE), ][1:20, ]
+movies_separated_runtime <- peliculas_runtime |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_runtime <- movies_separated_runtime[, genres]
 
+peliculas_revenue <- movies[order(movies$revenue, decreasing = TRUE), ][1:20, ]
+movies_separated_revenue <- peliculas_revenue |>
+    tidyr::separate_rows(genres, sep = "\\|")
+datos_generos_revenue <- movies_separated_revenue[, genres]
 
+number_of_actors <- movies |>
+  tidyr::separate_rows(actors, sep = "\\|") |>
+  group_by(title) |>
+  summarise(actorsAmount = n(), .groups = "drop")
 
+```
+
+### Soporte vs Confianza
+
+```{r}
+plot(
+  rules_filtered,
+  method = "scatterplot",
+  measure = c("support", "confidence"),
+  shading = "lift"
+)
+```
+
+### Grafo de reglas de asociación
+
+```{r}
+plot(
+  rules_filtered,
+  method = "graph",
+  engine = "htmlwidget"
+)
+```
 
 
 
