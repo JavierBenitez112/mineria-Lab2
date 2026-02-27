@@ -26,8 +26,8 @@ library(scales)
 library(lubridate)
 ```
 
-## Inciso 1
-- Haga una exploración rápida de sus datos, para eso haga un resumen de su conjunto de datos.
+## Exploracion de datos
+- Una exploración rápida de sus datos, para eso haga un resumen de su conjunto de datos.
 
 ```{r}
 movies <- read.csv("Movies_2026.csv")
