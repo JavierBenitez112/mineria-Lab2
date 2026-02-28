@@ -7,6 +7,9 @@ output:
     df_print: paged
 ---
 
+Repositorio GitHub
+https://github.com/JavierBenitez112/mineria-Lab2
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
