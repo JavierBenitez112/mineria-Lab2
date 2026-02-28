@@ -519,19 +519,122 @@ fviz_pca_var(compPrinc,
 
 ## Paso 1: Contexto y Objetivo
 
-## Paso 2: Items mas frecuentes
+El objetivo del algoritmo A Priori es descubrir patrones frecuentes de co-ocurrencia entre características categóricas de las películas. 
 
-## Paso 3: Conjunto de Items frecuentes
+Se analizarán principalmente:
 
-## Paso 4: Análisis del soporte de los conjuntos
+- Géneros
+- País de producción
+- Idioma original
 
-## Paso 5: Generación de reglas de asociación
+Buscamos reglas del tipo:
 
-## Paso 6: Soporte, confianza y lift
+Si una película pertenece al género X → entonces también suele pertenecer al género Y.
 
-## Paso 7: Filtrado de reglas relevantes
+---
 
-## Paso 8: Visualización de resultados
+## Paso 2: Preparación de datos
+
+```{r apriori_prep}
+library(arules)
+library(arulesViz)
+
+movies_apriori <- movies %>%
+  select(title, genres, productionCountry, originalLanguage) %>%
+  filter(!is.na(genres))
+
+movies_apriori <- movies_apriori %>%
+  tidyr::separate_rows(genres, sep = "\\|")
+
+transactions_list <- movies_apriori %>%
+  group_by(title) %>%
+  summarise(items = list(unique(c(genres,
+                                   paste0("Country_", productionCountry),
+                                   paste0("Lang_", originalLanguage)))))
+
+transacciones <- as(transactions_list$items, "transactions")
+
+summary(transacciones)
+```
+
+---
+
+## Paso 3: Items más frecuentes
+
+```{r items_frecuentes}
+itemFrequencyPlot(transacciones,
+                  topN = 15,
+                  type = "absolute",
+                  col = "steelblue",
+                  main = "Items más frecuentes")
+```
+
+---
+
+## Paso 4: Generación de reglas (Primer intento)
+
+```{r apriori_intento1}
+reglas1 <- apriori(transacciones,
+                   parameter = list(supp = 0.05,
+                                    conf = 0.7,
+                                    minlen = 2))
+
+summary(reglas1)
+
+inspect(head(sort(reglas1, by = "lift"), 10))
+```
+
+---
+
+## Paso 5: Segundo intento (más flexible)
+
+```{r apriori_intento2}
+reglas2 <- apriori(transacciones,
+                   parameter = list(supp = 0.02,
+                                    conf = 0.6,
+                                    minlen = 2))
+
+summary(reglas2)
+
+reglas_ordenadas <- sort(reglas2, by = "lift", decreasing = TRUE)
+
+inspect(head(reglas_ordenadas, 15))
+```
+
+---
+
+## Paso 6: Filtrado de reglas relevantes
+
+```{r reglas_filtradas}
+reglas_filtradas <- subset(reglas_ordenadas, lift > 1.2)
+
+inspect(head(reglas_filtradas, 10))
+```
+
+---
+
+## Paso 7: Visualización de reglas
+
+```{r reglas_plot}
+plot(reglas_filtradas, method = "graph", engine = "htmlwidget")
+```
+
+---
+
+## Paso 8: Interpretación de reglas
+
+Las reglas más interesantes son aquellas que presentan:
+
+- Soporte suficiente (no demasiado bajo)
+- Confianza alta
+- Lift mayor que 1 (idealmente > 1.2)
+
+El lift indica dependencia real entre los ítems. 
+Un lift > 1 significa que la ocurrencia conjunta es mayor a la esperada si fueran independientes.
+
+Reducir el soporte permitió encontrar relaciones más específicas entre géneros, mientras que mantener una confianza moderada evitó reglas débiles.
+
+Se deben analizar especialmente las reglas con mayor lift, ya que representan asociaciones estructuralmente fuertes dentro del mercado cinematográfico.
 
 
 
