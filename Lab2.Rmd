@@ -682,6 +682,74 @@ También destacan asociaciones muy fuertes entre Japón y el idioma japonés, co
 
 # Aprendizaje no supervisado: SVD
 
+```{r data for training}
+movies_train <- movies |>
+  select(budget, revenue, popularity, voteAvg, voteCount, runtime) |>
+  filter(budget > 0 & revenue > 0) |>
+  na.omit()
+
+movies_train_scaled <- scale(movies_train)
+
+movies_train_log <- movies |>
+  select(budget, revenue, popularity, voteAvg, voteCount, runtime) |>
+  filter(budget > 0, revenue > 0, voteCount > 0, popularity > 0, runtime > 0) |>
+  mutate(
+    budget = log1p(budget),
+    revenue = log1p(revenue),
+    popularity = log1p(popularity),
+    voteCount = log1p(voteCount),
+    runtime = log1p(runtime)
+  ) |>
+  na.omit()
+
+movies_train_scaled_log <- scale(movies_train_log)
+```
+
+```{r svg training}
+svd_movies <- svd(movies_train_scaled_log)
+
+# varianza explicada
+var_explained <- svd_movies$d^2 / sum(svd_movies$d^2)
+print(var_explained)
+print(cumsum(var_explained))
+```
+
+```{r varianza}
+var_df <- data.frame(
+  componente = factor(paste0("C", 1:length(var_explained)),
+                      levels = paste0("C", 1:length(var_explained))),
+  varianza = var_explained
+)
+
+ggplot(var_df, aes(x = componente, y = varianza)) +
+  geom_col() +
+  labs(
+    title = "Varianza explicada por componente",
+    x = "Componente",
+    y = "Proporción de varianza explicada"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# loadings
+loadings <- as.data.frame(svd_movies$v)
+rownames(loadings) <- colnames(movies_train_scaled_log)
+print(loadings)
+
+# scores
+scores <- as.data.frame(movies_train_scaled_log %*% svd_movies$v)
+
+ggplot(scores, aes(x = V1, y = V2)) +
+  geom_point(alpha = 0.5) +
+  labs(
+    title = "Películas proyectadas con SVD",
+    x = "Componente 1",
+    y = "Componente 2"
+  ) +
+  theme_minimal()
+```
+
 ---
 
 # Conclusiones y Hallazgos
