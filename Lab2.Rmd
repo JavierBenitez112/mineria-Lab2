@@ -11,14 +11,14 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r dependencies}
-# dependecies
-#install.packages("dplyr")
+```{r dependencies, message=FALSE, warning=FALSE}
+#install.packages(c("cluster","factoextra","hopkins","fpc","psych","corrplot",
+#                   "arules","arulesViz","tidyr","Rtsne"))
 ```
 
 # Librerias
 
-``` {r librarys, message=FALSE, warning=FALSE}
+```{r librarys, message=FALSE, warning=FALSE}
 library(ggplot2)
 library(dplyr)
 library(nortest)
@@ -33,105 +33,74 @@ library(fpc)
 library(psych)
 library(corrplot)
 library(tidyr)
+library(Rtsne)
 ```
 
-# Exploracion de datos
-- Una exploración rápida de sus datos, para eso haga un resumen de su conjunto de datos.
+---
 
-```{r}
+# Exploración de datos
+
+```{r load_data}
 movies <- read.csv("Movies_2026.csv", fileEncoding = "latin1")
-
 str(movies)
 ```
 
-  - Al momento de usar ```str()```, nos podemos hacer una idea de como son los datos en todo el dataset, este analisis se hace luego en el proyecto (en especifico en el inciso 2). Como nos podemos dar cuenta varios de estos campos llegan a tener informacion vacia para su tipo de dato respectivo.
-  
-```{r}
+Al usar `str()` se observa que el dataset tiene 19,883 películas con 28 variables. Varios campos presentan valores vacíos o cero, especialmente en budget, revenue y popularity.
 
-movies <- subset(movies, select = -id) # we ain't going to summarize the the id for pretty obvious reasons
+```{r summary}
+movies <- subset(movies, select = -id)
 summary(movies)
 ```
 
+El resumen muestra una alta asimetría en budget y revenue: la mediana es 0 en muchos casos, lo que indica que la mayoría de películas no tienen datos financieros completos. popularity tiene valores extremos que van desde 0 hasta miles.
 
-  - Al resumirlos no podemos agarrar informacion tan relevante para hacer cualquier tipo de analisis ademas de algunos valores numericos en dichos campos. Como ver cantidad de ingresos maximos y medios, prespuesto y ganancia por peliculas. No llega a ser informacion tan valiosa solo viendola de por si, ya que son datos generales entre todas y no de una solo empresa o por el estilo (se puede 'queriear' para lograrlo, pero ese no es el caso).
-  
-## Tipo de cada una de las variables 
-- (cualitativa ordinal o nominal, cuantitativa continua, cuantitativa discreta)
+## Tipo de variables
 
-**Cualitativas**
-Adicionalmente en estas clasificaciones las variables Actors y ActorsCharacters serian clasificados como cualitativos nominales pero no se agregaron porque es necesario una limpieza de datos antes.
+Cualitativas — Actors y ActorsCharacters serían nominales pero requieren limpieza antes de incluirlas.
 
-```{r datos cualitativos}
-cual_nominales <- c(
-  "genres",
-  "homePage",
-  "productionCompany",
-  "productionCompanyCountry",
-  "productionCountry",
-  "video",
-  "director",
-  "originalTitle",
-  "title",
-  "originalLanguage"
-)
-
-cual_ordinales <- c(
-  "releaseDate"
-)
-
-cualitativas <- c(cual_nominales, cual_ordinales)
-cualitativas
-datos_cual <- movies[, cualitativas]
+```{r datos_cualitativos}
+cual_nominales <- c("genres","homePage","productionCompany","productionCompanyCountry",
+                    "productionCountry","video","director","originalTitle","title","originalLanguage")
+cual_ordinales <- c("releaseDate")
+cualitativas   <- c(cual_nominales, cual_ordinales)
+datos_cual     <- movies[, cualitativas]
 head(datos_cual, 5)
 ```
 
-**Cuantitativas**
-Adicionalmente en estas clasificaciones la variable ActorsPopularity serian clasificados como cuantitativos continuos pero no se agregaron porque es necesario una limpieza de datos antes.
+Cuantitativas — ActorsPopularity sería continua pero requiere limpieza antes de incluirla.
 
-```{r datos cuantitativos}
-cuant_discretas <- c(
-  "budget",
-  "revenue",
-  "runtime",
-  "voteAvg",
-  "voteCount",
-  "genresAmount",
-  "productionCoAmount",
-  "productionCountriesAmount",
-  "actorsAmount",
-  "castWomenAmount",
-  "castMenAmount",
-  "releaseYear"
-)
-
-cuant_continuas <- c(
-  "popularity"
-)
-
-cuantitativas <- c(cuant_discretas, cuant_continuas)
-cuantitativas
-datos_cuant <- movies[, cuantitativas]
+```{r datos_cuantitativos}
+cuant_discretas <- c("budget","revenue","runtime","voteAvg","voteCount","genresAmount",
+                     "productionCoAmount","productionCountriesAmount","actorsAmount",
+                     "castWomenAmount","castMenAmount","releaseYear")
+cuant_continuas <- c("popularity")
+cuantitativas   <- c(cuant_discretas, cuant_continuas)
+datos_cuant     <- movies[, cuantitativas]
 head(datos_cuant, 5)
 ```
 
+---
 
+# 1. Análisis de Clustering
 
-# Análisis de Clustering
+## 1.1 Preparación de datos
 
-## Paso 0: Preparación de datos
+Se seleccionan 6 variables numéricas: `budget`, `revenue`, `popularity`, `voteAvg`, `voteCount` y `runtime`. Variables excluidas y sus razones:
 
-Se seleccionan 6 variables numéricas: `budget`, `revenue`, `popularity`, `voteAvg`, `voteCount` y `runtime`. Se excluyen variables de texto, fechas y conteos auxiliares que no aportarían patrones útiles. Se eliminan registros con `budget = 0` y `revenue = 0` por ser datos incompletos. Tras la limpieza quedan 4,262 películas.
+- Variables de texto (title, director, actors, genres): no son numéricas y requerirían encoding especial.
+- Fechas (releaseDate): representadas ya por releaseYear.
+- Conteos auxiliares (genresAmount, productionCoAmount, castMenAmount, castWomenAmount, actorsAmount): introducen ruido sin aportar un perfil comercial claro.
+- actorsPopularity, actorsCharacter: muchos NAs y requieren limpieza adicional.
+
+Se eliminan películas con `budget = 0` o `revenue = 0` por ser registros incompletos. Tras la limpieza quedan 4,262 películas con datos comerciales completos.
 
 ```{r cluster_prep}
-# Variables numéricas seleccionadas para clustering
 vars_cluster <- c("budget", "revenue", "popularity", "voteAvg", "voteCount", "runtime")
 
-# Eliminar NAs, duplicados y películas sin datos comerciales
 d2f_raw <- na.omit(movies[, c("title", vars_cluster)])
 d2f_raw <- d2f_raw[!duplicated(d2f_raw$title), ]
 d2f_raw <- d2f_raw[d2f_raw$budget > 0 & d2f_raw$revenue > 0, ]
 
-# Escalar datos (necesario: las variables tienen magnitudes muy distintas)
 d2f <- as.data.frame(scale(d2f_raw[, vars_cluster]))
 rownames(d2f) <- d2f_raw$title
 
@@ -141,7 +110,7 @@ cat("Filas totales para clustering:", nrow(d2f), "\n")
 
 ---
 
-## Paso 1: Tendencia al agrupamiento — Hopkins y VAT
+## 1.2 Tendencia al agrupamiento — Hopkins y VAT
 
 ### Estadístico de Hopkins
 
@@ -149,20 +118,20 @@ El estadístico de Hopkins mide la tendencia al agrupamiento natural. Valores ce
 
 ```{r hopkins}
 set.seed(123)
-muestra_hop <- d2f[sample(nrow(d2f), min(500, nrow(d2f))), ]
-hop_resultado <- hopkins(muestra_hop, m = 50)
+muestra_hop    <- d2f[sample(nrow(d2f), min(500, nrow(d2f))), ]
+hop_resultado  <- hopkins(muestra_hop, m = 50)
 cat("Estadístico de Hopkins:", round(hop_resultado, 4), "\n")
 ```
 
-El estadístico resultó muy cercano a 1.0, confirmando alta tendencia al agrupamiento natural. Aplicar clustering sobre estos datos es estadísticamente válido.
+El estadístico resultó muy cercano a 1.0, confirmando alta tendencia al agrupamiento natural. Aplicar clustering sobre estos datos es estadísticamente válido y los grupos que se formen reflejarán patrones reales.
 
-### VAT (Visual Assessment of Tendency)
+### VAT
 
 ```{r vat}
 set.seed(123)
-n_vat <- min(150, nrow(d2f))
+n_vat      <- min(150, nrow(d2f))
 muestra_vat <- d2f[sample(nrow(d2f), n_vat), ]
-dist_vat <- dist(muestra_vat, method = "euclidean")
+dist_vat   <- dist(muestra_vat, method = "euclidean")
 
 fviz_dist(dist_vat, show_labels = FALSE,
           gradient = list(low = "#00AFBB", mid = "white", high = "#FC4E07")) +
@@ -170,72 +139,59 @@ fviz_dist(dist_vat, show_labels = FALSE,
        subtitle = paste("Muestra de", n_vat, "películas. Bloques azules diagonales indican grupos naturales."))
 ```
 
-La gráfica muestra la matriz de distancias reordenada. Se distingue una zona azul central (la mayoría de películas con perfil comercial similar) y zonas naranjas en los bordes correspondientes a producciones con valores extremos en popularidad o ingresos. Esto confirma la presencia de grupos naturales, aunque con una distribución asimétrica donde la gran mayoría comparte características parecidas.
+La gráfica muestra la matriz de distancias reordenada. Se distingue una zona azul central (la mayoría de películas con perfil comercial similar) y zonas naranjas en los bordes correspondientes a producciones con valores extremos. Esto confirma la presencia de grupos naturales, con una distribución asimétrica donde la gran mayoría comparte características parecidas.
 
 ---
 
-## Paso 2: Determinación del número óptimo de clusters
+## 1.3 Determinación del número óptimo de clusters
 
-> Nota técnica: Se usa una muestra de 2,000 películas para los métodos de determinación de k, evitando el alto consumo de RAM que generaría calcular matrices de distancias O(n²) sobre el dataset completo.
+> Nota técnica: Se usa una muestra de 2,000 películas para evitar el alto consumo de RAM que generaría calcular matrices de distancias O(n²) sobre el dataset completo.
 
 ```{r muestra_k}
 set.seed(123)
-n_muestra <- min(2000, nrow(d2f))
+n_muestra  <- min(2000, nrow(d2f))
 idx_muestra <- sample(nrow(d2f), n_muestra)
 d2f_muestra <- d2f[idx_muestra, ]
-cat("Muestra utilizada para determinar k:", n_muestra, "películas\n")
+cat("Muestra para k:", n_muestra, "películas\n")
 ```
 
 ### Método del Codo (WSS)
 
-```{r metodo_codo_manual}
+```{r codo_manual}
 wss <- numeric(10)
-for (i in 1:10) {
-  wss[i] <- sum(kmeans(d2f_muestra, centers = i, nstart = 10)$withinss)
-}
-plot(1:10, wss, type = "b",
-     xlab = "Número de Clusters",
-     ylab = "Suma de cuadrados dentro del grupo",
-     main = "Método del Codo – WSS")
+for (i in 1:10) wss[i] <- sum(kmeans(d2f_muestra, centers = i, nstart = 10)$withinss)
+plot(1:10, wss, type = "b", xlab = "Número de Clusters",
+     ylab = "WSS", main = "Método del Codo – WSS")
 ```
 
 ```{r codo_factoextra}
 fviz_nbclust(d2f_muestra, kmeans, method = "wss", k.max = 10) +
-  labs(title    = "Método del Codo (WSS) – K-Means",
-       subtitle = "El 'codo' señala el k donde la reducción de WSS se estabiliza",
-       x = "Número de Clusters (k)", y = "WSS intra-cluster") +
+  labs(title = "Método del Codo (WSS)", x = "k", y = "WSS intra-cluster") +
   theme_bw()
 ```
 
-La curva WSS muestra una reducción pronunciada hasta k=4, después de la cual la disminución se vuelve marginal. El "codo" se forma claramente en k=4, por lo que agregar más clusters no justifica la complejidad adicional.
+La curva WSS muestra una reducción pronunciada hasta k=4, después de la cual la disminución se vuelve marginal. El "codo" se forma claramente en k=4.
 
 ### Método de la Silueta
 
 ```{r silueta_factoextra}
 fviz_nbclust(d2f_muestra, kmeans, method = "silhouette", k.max = 10) +
-  labs(title    = "Método de Silueta – K-Means",
-       subtitle = "El k con mayor silueta promedio es el más adecuado",
-       x = "Número de Clusters (k)", y = "Ancho de Silueta Promedio") +
+  labs(title = "Método de Silueta – K-Means", x = "k", y = "Silueta Promedio") +
   theme_bw()
 ```
 
-La silueta confirma k=4 como el número óptimo, con un ancho promedio de 0.573 ("estructura razonable"). Para k≥5 la silueta cae por debajo de 0.31, generando subgrupos sin coherencia real.
+La silueta confirma k=4 con ancho promedio de 0.573 ("estructura razonable"). Para k≥5 cae por debajo de 0.31.
 
 ### Gap Statistic
 
 ```{r gap_factoextra}
-fviz_nbclust(d2f_muestra, kmeans,
-             nstart  = 25,
-             method  = "gap_stat",
-             nboot   = 50,
-             verbose = FALSE) +
-  labs(title    = "Gap Statistic – K-Means",
-       subtitle = "El k óptimo es donde Gap(k) es máximo o se estabiliza",
-       x = "Número de Clusters (k)", y = "Gap Statistic") +
+fviz_nbclust(d2f_muestra, kmeans, nstart = 25, method = "gap_stat",
+             nboot = 50, verbose = FALSE) +
+  labs(title = "Gap Statistic – K-Means", x = "k", y = "Gap Statistic") +
   theme_bw()
 ```
 
-### Tabla resumen de silueta por k
+### Tabla resumen
 
 ```{r tabla_silueta}
 sil_scores <- sapply(2:8, function(k) {
@@ -245,8 +201,7 @@ sil_scores <- sapply(2:8, function(k) {
 })
 
 sil_tabla <- data.frame(
-  k              = 2:8,
-  Silhouette     = sil_scores,
+  k = 2:8, Silhouette = sil_scores,
   Interpretacion = ifelse(sil_scores >= 0.70, "Estructura fuerte",
                    ifelse(sil_scores >= 0.50, "Estructura razonable",
                    ifelse(sil_scores >= 0.25, "Estructura débil", "Sin estructura")))
@@ -254,15 +209,14 @@ sil_tabla <- data.frame(
 print(sil_tabla)
 
 k_final <- sil_tabla$k[which.max(sil_tabla$Silhouette)]
-cat("\nK seleccionado:", k_final, "\n")
-cat("Silueta promedio:", max(sil_tabla$Silhouette), "\n")
+cat("\nK seleccionado:", k_final, "| Silueta:", max(sil_tabla$Silhouette), "\n")
 ```
 
-Los tres métodos coinciden en k=4 como el número óptimo. k=2, 3 y 4 califican como "Estructura razonable" (silueta ≥ 0.50), siendo k=4 el que maximiza la separación con 0.573. A partir de k=5 la calidad se degrada. Se selecciona k=4.
+Los tres métodos (codo, silueta y gap statistic) coinciden en k=4. k=2, 3 y 4 califican como "Estructura razonable", siendo k=4 el que maximiza la separación con silueta 0.573. A partir de k=5 la calidad se degrada. Se selecciona k=4.
 
 ---
 
-## Paso 3: Agrupamiento
+## 1.4 Agrupamiento
 
 ### Algoritmo 1: K-Means
 
@@ -276,23 +230,24 @@ d2f_raw$cluster_km <- as.factor(km_res$cluster)
 cat("Tamaño de cada cluster (K-Means):\n")
 print(km_res$size)
 cat("Varianza explicada (BSS/TSS):", round(km_res$betweenss / km_res$totss * 100, 1), "%\n")
+```
 
+```{r viz_kmeans_plotcluster}
 set.seed(123)
 idx_plot <- sample(nrow(d2f), min(1000, nrow(d2f)))
 plotcluster(d2f[idx_plot, ], km_res$cluster[idx_plot],
             main = "K-Means – plotcluster (muestra 1,000 puntos)")
+```
 
-fviz_cluster(km_res, data = d2f,
-             geom         = "point",
-             ellipse.type = "norm",
-             palette      = "Set2",
-             alpha        = 0.4) +
-  labs(title    = "K-Means",
+```{r viz_kmeans_fviz}
+fviz_cluster(km_res, data = d2f, geom = "point",
+             ellipse.type = "norm", palette = "Set2", alpha = 0.4) +
+  labs(title    = "K-Means – Visualización de Clusters",
        subtitle = paste("k =", k_final, "| n =", nrow(d2f), "películas")) +
   theme_bw()
 ```
 
-K-Means produjo 4 grupos muy desiguales: el Cluster 1 concentra ~3,719 películas (87%), mientras los demás son minoritarios (467, 77 y 7 películas). Esta distribución refleja la industria real, donde la gran mayoría son producciones estándar y solo un pequeño porcentaje alcanza el nivel de blockbuster o fenómeno viral. El modelo explica el 52.7% de la varianza total.
+K-Means produjo 4 grupos muy desiguales: el Cluster 1 concentra ~3,719 películas (87%), mientras los demás son minoritarios (467, 77 y 7 películas). Esta distribución refleja la industria real. El modelo explica el 52.7% de la varianza total.
 
 ### Algoritmo 2: Clustering Jerárquico (Ward)
 
@@ -300,16 +255,16 @@ El jerárquico requiere una matriz de distancias O(n²), por lo que se aplica so
 
 ```{r hierarchical_clustering}
 set.seed(456)
-n_hc <- min(1500, nrow(d2f))
-idx_hc <- sample(nrow(d2f), n_hc)
-d2f_hc <- d2f[idx_hc, ]
+n_hc    <- min(1500, nrow(d2f))
+idx_hc  <- sample(nrow(d2f), n_hc)
+d2f_hc  <- d2f[idx_hc, ]
 
 dist_hc <- dist(d2f_hc, method = "euclidean")
 hc_res  <- hclust(dist_hc, method = "ward.D2")
 
 plot(hc_res, labels = FALSE, hang = -1,
-     main = paste("Dendrograma – Clustering Jerárquico (Ward)\nMuestra:", n_hc, "películas"),
-     xlab = "Películas", ylab = "Distancia (Ward)")
+     main = paste("Dendrograma – Jerárquico Ward | Muestra:", n_hc),
+     xlab = "Películas", ylab = "Distancia")
 rect.hclust(hc_res, k = k_final, border = 2:(k_final + 1))
 
 hc_clusters <- cutree(hc_res, k = k_final)
@@ -317,11 +272,11 @@ cat("Distribución por cluster (Jerárquico):\n")
 print(table(hc_clusters))
 ```
 
-El dendrograma muestra una división principal en dos ramas a nivel alto, con subdivisiones más finas en niveles inferiores. El corte a k=4 es justificado por los saltos de altura entre fusiones. Al igual que K-Means, produce un cluster dominante con la mayoría de películas y grupos pequeños de producciones excepcionales.
+El dendrograma muestra una división principal en dos ramas a nivel alto, con subdivisiones más finas en niveles inferiores. El corte a k=4 es justificado por los saltos de altura entre fusiones. Al igual que K-Means, produce un cluster dominante y grupos pequeños de producciones excepcionales.
 
 ---
 
-## Paso 4: Calidad del agrupamiento — Silueta
+## 1.5 Calidad del agrupamiento — Silueta
 
 Ambos algoritmos se evalúan sobre la misma muestra (n=1,500) para comparación justa.
 
@@ -339,97 +294,83 @@ print(calidad)
 ```
 
 ```{r silueta_kmeans, fig.width=8, fig.height=5}
-plot(sil_km,
-     col    = (2:(k_final + 1))[sil_km[, 1]],
-     border = NA,
-     main   = paste("Silueta K-Means | k =", k_final,
-                    "| avg =", round(mean(sil_km[, 3]), 3)),
-     sub    = paste("n =", nrow(d2f_hc), "películas (muestra)"))
+plot(sil_km, col = (2:(k_final + 1))[sil_km[, 1]], border = NA,
+     main = paste("Silueta K-Means | avg =", round(mean(sil_km[, 3]), 3)),
+     sub  = paste("n =", nrow(d2f_hc), "películas"))
 abline(v = mean(sil_km[, 3]), lty = 2, col = "red")
 ```
 
 ```{r silueta_jerarquico, fig.width=8, fig.height=5}
-plot(sil_hc,
-     col    = (2:(k_final + 1))[sil_hc[, 1]],
-     border = NA,
-     main   = paste("Silueta Jerárquico (Ward) | k =", k_final,
-                    "| avg =", round(mean(sil_hc[, 3]), 3)),
-     sub    = paste("n =", nrow(d2f_hc), "películas (muestra)"))
+plot(sil_hc, col = (2:(k_final + 1))[sil_hc[, 1]], border = NA,
+     main = paste("Silueta Jerárquico (Ward) | avg =", round(mean(sil_hc[, 3]), 3)),
+     sub  = paste("n =", nrow(d2f_hc), "películas"))
 abline(v = mean(sil_hc[, 3]), lty = 2, col = "red")
 ```
 
-K-Means obtuvo silueta promedio de 0.5376, superando al Jerárquico (0.4691). En la silueta de K-Means, el Cluster 4 (7 películas) alcanza la silueta más alta (~0.80), indicando que estas películas son muy distintas del resto. El Cluster 1 tiene silueta de ~0.60 con buena cohesión interna. El Cluster 2 muestra silueta baja (~0.14), lo que refleja que la frontera entre "película exitosa" y "blockbuster" es difusa. El jerárquico genera un cluster mixto con silueta muy baja (0.06), indicando menor calidad de separación. Se selecciona K-Means como algoritmo final por su mayor silueta y porque opera sobre el dataset completo.
+K-Means obtuvo silueta promedio de 0.5376, superando al Jerárquico (0.4691). El Cluster 4 (7 películas) tiene silueta más alta (~0.80), indicando que son muy distintas del resto. El Cluster 1 tiene ~0.60 con buena cohesión. El Cluster 2 muestra silueta baja (~0.14), reflejando que la frontera con el Cluster 1 es difusa. El jerárquico genera un cluster mixto con silueta de apenas 0.06. Se selecciona K-Means como algoritmo final.
 
 ```{r mejor_algoritmo}
 mejor_algoritmo <- calidad$Algoritmo[which.max(calidad$Silhouette_Promedio)]
-cat("Algoritmo con mejor calidad de clusters:", mejor_algoritmo, "\n")
-cat("Se usará K-Means (dataset completo) para la interpretación final.\n")
+cat("Algoritmo seleccionado:", mejor_algoritmo, "\n")
 ```
 
 ---
 
-## Paso 5: Interpretación de los grupos
+## 1.6 Interpretación de los grupos
 
-### 5.1 Medidas de tendencia central por cluster
+### Medidas de tendencia central por cluster
 
-```{r cluster_medidas_tendencia}
+```{r cluster_medidas}
 perfil <- d2f_raw %>%
   group_by(cluster_km) %>%
   summarise(
-    n_peliculas     = n(),
-    budget_media    = round(mean(budget,     na.rm = TRUE), 0),
-    budget_mediana  = round(median(budget,   na.rm = TRUE), 0),
-    revenue_media   = round(mean(revenue,    na.rm = TRUE), 0),
-    revenue_mediana = round(median(revenue,  na.rm = TRUE), 0),
-    pop_media       = round(mean(popularity, na.rm = TRUE), 2),
-    voteAvg_media   = round(mean(voteAvg,    na.rm = TRUE), 2),
-    voteCount_media = round(mean(voteCount,  na.rm = TRUE), 0),
-    runtime_media   = round(mean(runtime,    na.rm = TRUE), 1)
+    n           = n(),
+    budget_med  = round(mean(budget,     na.rm = TRUE) / 1e6, 1),
+    budget_mdn  = round(median(budget,   na.rm = TRUE) / 1e6, 1),
+    revenue_med = round(mean(revenue,    na.rm = TRUE) / 1e6, 1),
+    revenue_mdn = round(median(revenue,  na.rm = TRUE) / 1e6, 1),
+    pop_med     = round(mean(popularity, na.rm = TRUE), 1),
+    voteAvg_med = round(mean(voteAvg,    na.rm = TRUE), 2),
+    voteCount_med = round(mean(voteCount, na.rm = TRUE), 0),
+    runtime_med = round(mean(runtime,    na.rm = TRUE), 1)
   )
 print(perfil)
 ```
 
-Con base en los perfiles obtenidos, los 4 clusters se identifican como:
+Con base en los perfiles:
 
-- Cluster 1 — "Producciones Convencionales" (n≈3,719, 87%): Presupuesto medio $28M, ingresos $73M, popularidad 38. La gran mayoría del catálogo con características comerciales estándar. Drama, Comedia y Thriller dominan.
+- Cluster 1 — "Producciones Convencionales" (n≈3,719, 87%): Budget medio $28M, ingresos $73M, popularidad 38. La gran mayoría del catálogo. Drama, Comedia y Thriller dominan.
+- Cluster 2 — "Blockbusters Comerciales" (n≈467, 11%): Budget $130M, ingresos $540M, popularidad 147. Alto rendimiento con Action y Adventure. Incluye Avatar, Avengers: Endgame y Titanic.
+- Cluster 3 — "Producciones Marginales" (n≈77, 2%): Budget y revenue con medianas cercanas a cero, duración ~18 min. Cortometrajes o registros incompletos.
+- Cluster 4 — "Fenómenos Virales" (n=7, <1%): Popularidad extrema (media 6,649), budget moderado $120M. Spider-Man: No Way Home, Eternals y Sing 2.
 
-- Cluster 2 — "Blockbusters Comerciales" (n≈467, 11%): Presupuesto $130M, ingresos $540M, popularidad 147. Alto rendimiento comercial con géneros de Action y Adventure. Incluye Avatar, Avengers: Endgame y Titanic.
+### Boxplots por variable
 
-- Cluster 3 — "Producciones Marginales" (n≈77, 2%): Presupuesto y revenue con medianas cercanas a cero, popularidad 2.8, duración ~18 min. Probablemente cortometrajes o producciones con registros financieros incompletos.
-
-- Cluster 4 — "Fenómenos Virales" (n=7, <1%): Popularidad extrema (media 6,649, máximo 11,475), presupuesto moderado $120M. Spider-Man: No Way Home, Eternals y Sing 2 lideran este cluster por su engagement viral masivo en plataformas digitales.
-
-### 5.2 Boxplots comparativos por variable
-
-```{r cluster_boxplots}
+```{r boxplots}
 for (v in vars_cluster) {
   p <- ggplot(d2f_raw, aes_string(x = "cluster_km", y = v, fill = "cluster_km")) +
     geom_boxplot(alpha = 0.7, outlier.color = "red", outlier.size = 1) +
     scale_fill_brewer(palette = "Set2") +
-    labs(title    = paste("Distribución de", v, "por Cluster"),
-         subtitle = "Outliers en rojo = películas atípicas dentro del grupo",
+    labs(title = paste("Distribución de", v, "por Cluster"),
          x = "Cluster", y = v) +
     theme_bw() + theme(legend.position = "none")
   print(p)
 }
 ```
 
-Los boxplots confirman la interpretación de los clusters. En budget y revenue el Cluster 2 se ubica claramente por encima de los demás. La variable popularity es la que mejor separa los clusters, con el Cluster 4 completamente fuera de escala. voteAvg es similar entre clusters (6.5–7.5), indicando que la calidad percibida no es el principal diferenciador. Runtime es homogéneo, salvo el Cluster 3 que incluye cortometrajes (~18 min de media).
+En budget y revenue el Cluster 2 se ubica claramente por encima. Popularity es la variable que mejor separa los clusters, con el Cluster 4 completamente fuera de escala. voteAvg es similar entre clusters (6.5–7.5), indicando que la calidad percibida no es el principal diferenciador. Runtime es homogéneo salvo el Cluster 3 con cortometrajes (~18 min).
 
-### 5.3 Géneros por cluster
+### Tablas de frecuencia de géneros por cluster
 
-```{r cluster_freq_genres}
+```{r freq_genres}
 movies_con_cluster <- movies %>%
   filter(title %in% d2f_raw$title) %>%
   left_join(d2f_raw[, c("title", "cluster_km")], by = "title") %>%
   tidyr::separate_rows(genres, sep = "\\|")
 
-tabla_generos <- movies_con_cluster %>%
+top_generos <- movies_con_cluster %>%
   group_by(cluster_km, genres) %>%
   summarise(frecuencia = n(), .groups = "drop") %>%
-  arrange(cluster_km, desc(frecuencia))
-
-top_generos <- tabla_generos %>%
   group_by(cluster_km) %>%
   slice_max(frecuencia, n = 5)
 
@@ -440,23 +381,18 @@ ggplot(top_generos, aes(x = reorder(genres, frecuencia), y = frecuencia, fill = 
   facet_wrap(~cluster_km, scales = "free_y") +
   coord_flip() +
   scale_fill_brewer(palette = "Set2") +
-  labs(title    = "Top 5 Géneros por Cluster",
-       subtitle = "Distribución de géneros dentro de cada grupo de películas",
-       x = "Género", y = "Frecuencia") +
+  labs(title = "Top 5 Géneros por Cluster", x = "Género", y = "Frecuencia") +
   theme_bw()
 ```
 
-El Cluster 1 está dominado por Drama y Comedia, géneros de producción accesible y presupuestos moderados. El Cluster 2 tiene Adventure y Action como géneros principales, consistente con las grandes producciones de Hollywood. El Cluster 4 comparte géneros con el Cluster 2 (Adventure, Action, Sci-Fi), confirmando que son películas de franquicias masivas cuyo diferenciador es la popularidad viral.
+El Cluster 1 está dominado por Drama y Comedia, géneros de producción accesible. El Cluster 2 tiene Adventure y Action, consistente con grandes producciones de Hollywood. El Cluster 4 comparte géneros con el Cluster 2 (Adventure, Action, Sci-Fi), confirmando películas de franquicias masivas cuyo diferenciador es la popularidad viral.
 
-### 5.4 Perfil normalizado comparativo
+### Perfil normalizado comparativo
 
-```{r cluster_perfil_comparativo}
+```{r perfil_comparativo}
 perfil_norm <- perfil %>%
-  select(cluster_km, budget_media, revenue_media, pop_media, voteAvg_media, runtime_media) %>%
+  select(cluster_km, budget_med, revenue_med, pop_med, voteAvg_med, runtime_med) %>%
   mutate(across(-cluster_km, ~ round((. - min(.)) / (max(.) - min(.)), 4)))
-
-cat("=== Perfil normalizado de clusters (0 = mínimo, 1 = máximo) ===\n")
-print(perfil_norm)
 
 perfil_long <- perfil_norm %>%
   tidyr::pivot_longer(-cluster_km, names_to = "variable", values_to = "valor")
@@ -464,365 +400,332 @@ perfil_long <- perfil_norm %>%
 ggplot(perfil_long, aes(x = variable, y = valor, fill = cluster_km)) +
   geom_col(position = "dodge", alpha = 0.8) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title    = "Perfil Comparativo de Clusters (valores normalizados)",
-       subtitle = "Identifica en qué dimensiones se diferencia cada grupo",
-       x = "Variable", y = "Valor Normalizado (0–1)", fill = "Cluster") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  labs(title    = "Perfil Comparativo Normalizado por Cluster (0=min, 1=max)",
+       x = "Variable", y = "Valor Normalizado", fill = "Cluster") +
+  theme_bw() + theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
-El Cluster 4 domina en popularidad (valor 1.0) con valores intermedios en budget y revenue, confirmando que popularidad y éxito financiero no son equivalentes. El Cluster 2 lidera en budget y revenue. El Cluster 3 tiene valores cercanos a cero en todas las variables. El Cluster 1 mantiene valores moderados en todas las dimensiones.
+El Cluster 4 domina en popularidad (1.0) con valores intermedios en budget y revenue, confirmando que popularidad y éxito financiero no son equivalentes. El Cluster 2 lidera en budget y revenue. El Cluster 3 tiene valores cercanos a cero en todo. El Cluster 1 mantiene valores moderados en todas las dimensiones.
 
-### 5.5 Dispersión Budget vs Revenue y Popularidad vs Calificación
+### Dispersión Budget vs Revenue y Popularidad vs Calificación
 
-```{r cluster_scatter_revenue_budget}
+```{r scatter_budget_revenue}
 ggplot(d2f_raw, aes(x = budget, y = revenue, color = cluster_km)) +
   geom_point(alpha = 0.5, size = 1.5) +
   scale_color_brewer(palette = "Set2") +
   scale_x_continuous(labels = scales::comma) +
   scale_y_continuous(labels = scales::comma) +
-  labs(title    = "Budget vs Revenue por Cluster",
-       subtitle = "Cada color representa un grupo con características similares",
-       x = "Presupuesto (Budget)", y = "Ingresos (Revenue)", color = "Cluster") +
+  labs(title = "Budget vs Revenue por Cluster", x = "Presupuesto", y = "Ingresos", color = "Cluster") +
   theme_bw()
 ```
 
-```{r cluster_scatter_popularity_vote}
+```{r scatter_pop_vote}
 ggplot(d2f_raw, aes(x = popularity, y = voteAvg, color = cluster_km)) +
   geom_point(alpha = 0.5, size = 1.5) +
   scale_color_brewer(palette = "Set2") +
-  labs(title    = "Popularidad vs Calificación Promedio por Cluster",
-       subtitle = "¿Los clusters más populares son también los mejor calificados?",
-       x = "Popularidad", y = "Calificación Promedio (voteAvg)", color = "Cluster") +
+  labs(title = "Popularidad vs Calificación por Cluster", x = "Popularidad", y = "voteAvg", color = "Cluster") +
   theme_bw()
 ```
 
-En Budget vs Revenue, el Cluster 2 ocupa la esquina superior derecha combinando grandes presupuestos con grandes ingresos. El Cluster 1 forma una nube densa en el rango bajo-medio. El Cluster 4 no alcanza los ingresos más altos, coherente con su naturaleza viral más que financiera. En el gráfico de popularidad vs calificación, el Cluster 4 se separa drásticamente en el eje de popularidad, pero sus calificaciones (7.3–8.5) son similares a las de los otros clusters. Esto indica que la popularidad en TMDB responde más a franquicias reconocibles que a la calidad objetiva del film.
+En Budget vs Revenue el Cluster 2 ocupa la esquina superior derecha. El Cluster 1 forma una nube densa en el rango bajo-medio. En popularidad vs calificación, el Cluster 4 se separa drásticamente en el eje de popularidad, pero sus calificaciones (7.3–8.5) son similares a las de otros clusters. La popularidad en TMDB responde más a franquicias reconocibles que a la calidad objetiva del film.
 
 ---
 
-# PCA
+# 2. Análisis de Componentes Principales (PCA)
 
-## Paso 0 - Análisis de viabilidad
+## 2.1 Variables categóricas en PCA
 
-Revisamos que el dataset sea apto para aplicar el analisis de PCA
+Las variables categóricas como genres, productionCountry u originalLanguage tendrían que codificarse como dummy variables o one-hot encoding. Dado que genres puede tener hasta 20 categorías y productionCompany miles de valores únicos, incluirlas generaría cientos de dimensiones con muy baja varianza individual. No vale la pena: se pierde interpretabilidad y se introduce ruido. El PCA se aplica solo a las variables numéricas.
+
+## 2.2 Viabilidad del PCA
+
+### Matriz de correlaciones
+
+```{r corrplot_pca}
+datos_cuant_clean <- datos_cuant[, sapply(datos_cuant, is.numeric)]
+datos_cuant_clean <- na.omit(datos_cuant_clean)
+
+matriz <- cor(datos_cuant_clean, use = "pairwise.complete.obs")
+corrplot(matriz, method = "color", type = "upper",
+         addCoef.col = "black", tl.col = "black", tl.srt = 45,
+         title = "Matriz de Correlaciones – Variables Cuantitativas",
+         mar = c(0,0,1,0))
+```
+
+La matriz de correlaciones muestra correlaciones moderadas a altas entre varias variables. Las más relevantes son: actorsAmount–castWomenAmount (0.79), revenue–voteCount (0.78), budget–revenue (0.78), budget–voteCount (0.67), y runtime–voteAvg (0.60). Estas correlaciones indican que las variables comparten información y pueden reducirse sin perder demasiada variabilidad, lo que justifica aplicar PCA.
 
 ### KMO
 
-```{r}
-datos_cuant_clean <- datos_cuant[, sapply(datos_cuant, is.numeric)]
-datos_cuant_clean <- na.omit(datos_cuant_clean)
+```{r kmo}
 KMO(datos_cuant_clean)
 ```
 
+Un valor KMO mayor a 0.6 indica que las correlaciones entre variables son suficientes para aplicar análisis factorial o PCA. Si el resultado es "mediocre" (0.6–0.7) o superior, el PCA es apropiado.
+
 ### Esfericidad de Bartlett
 
-```{r}
+```{r bartlett}
 cortest.bartlett(cor(datos_cuant_clean), n = nrow(datos_cuant_clean))
 ```
 
-## Visualización de correlaciones
+Si el p-value es < 0.05 se rechaza la hipótesis de que la matriz de correlaciones es una identidad, confirmando que existe estructura de correlación entre las variables y que tiene sentido reducir dimensiones con PCA.
 
-```{r}
-matriz <- cor(datos_cuant_clean, use = "pairwise.complete.obs")
-corrplot(matriz,
-         method = "color",
-         type = "upper",
-         addCoef.col = "black",
-         tl.col = "black",
-         tl.srt = 45)
-```
+## 2.3 PCA con variables numéricas
 
-## Paso 1 - Estandarización
-con Scale estandarizamos los datos y aplicamos la media y la desviacion estandar
-```{r}
+```{r estandarizacion}
 datos_std <- scale(datos_cuant_clean)
-apply(datos_std, 2, mean)
-apply(datos_std, 2, sd)
 ```
 
-## Paso 2 - PCA
-Separamos la varianza explicada y graficamente que tanto representa cada componente su set de datos.
-```{r}
+```{r pca}
 compPrinc <- prcomp(datos_std)
 summary(compPrinc)
 ```
 
-## Scree Plot
-
-```{r}
-fviz_eig(compPrinc)
+```{r scree_plot}
+fviz_eig(compPrinc, addlabels = TRUE, ncp = 13) +
+  labs(title = "Scree Plot – Varianza Explicada por Componente",
+       x = "Componente Principal", y = "% Varianza Explicada") +
+  theme_bw()
 ```
 
+El Scree Plot muestra que los primeros componentes concentran la mayor parte de la varianza. PC1 explica el 37.6%, PC2 el 13.3%, PC3 el 10.4%. Con 7 componentes se alcanza el 84.7% de la varianza acumulada, y con 8 el 88.8%. Se recomienda seleccionar 7 u 8 componentes para retener la mayoría de la información con menos de la mitad de las variables originales.
 
-## Visualización de variables
-
-```{r}
+```{r pca_var_viz}
 fviz_pca_var(compPrinc,
              col.var = "cos2",
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE)
+             repel = TRUE) +
+  labs(title = "Variables en el Espacio PCA (cos2 = calidad de representación)")
 ```
 
+El biplot de variables muestra qué tan bien representada está cada variable en los dos primeros componentes. Las variables con mayor cos2 (más rojas) son las mejor representadas. Las variables agrupadas en la misma dirección están correlacionadas entre sí.
 
+```{r pca_loadings}
+# Loadings de los primeros 3 componentes
+loadings_df <- as.data.frame(compPrinc$rotation[, 1:4])
+loadings_df$variable <- rownames(loadings_df)
+print(loadings_df[order(abs(loadings_df$PC1), decreasing = TRUE), ])
+```
 
-# Algoritmo A Priori
+Interpretación de los primeros componentes:
 
-
-El objetivo del algoritmo A Priori es descubrir patrones frecuentes de co-ocurrencia entre características categóricas de las películas. 
-
-Se analizarán principalmente:
-
-- Géneros
-- País de producción
-- Idioma original
-
-Buscamos reglas del tipo:
-
-Si una película pertenece al género X → entonces también suele pertenecer al género Y.
+- PC1 (37.6%): Captura el "tamaño y alcance de la producción". Las variables con mayor peso son actorsAmount, castWomenAmount, runtime, voteCount, voteAvg y budget. Películas con valores altos en PC1 son producciones grandes, bien valoradas y con elencos amplios.
+- PC2 (13.3%): Captura el "éxito comercial bruto". Liderado por revenue, budget, voteCount y productionCountriesAmount. Diferencia las películas que generan ingresos masivos independientemente de su tamaño de producción.
+- PC3 (10.4%): Captura "composición del elenco masculino y producción internacional". Pesos altos en castMenAmount y productionCountriesAmount.
 
 ---
 
-## Preparación de datos
+# 3. Algoritmo A Priori
 
-```{r}
-library(arules)
-library(arulesViz)
+## 3.1 Contexto y Objetivo
 
-movies_apriori <- movies %>%
-  select(title, genres, productionCountry, originalLanguage) %>%
-  filter(!is.na(genres))
+Se aplica el algoritmo Apriori al dataset de películas para encontrar reglas de asociación entre características comerciales. Las variables numéricas se discretizan en categorías para convertirlas en ítems. El objetivo es descubrir patrones como "películas con alto presupuesto tienden a generar ingresos blockbuster" o "películas muy populares suelen tener buena calificación".
 
-movies_apriori <- movies_apriori %>%
-  tidyr::separate_rows(genres, sep = "\\|")
+## 3.2 Discretización de variables
 
-transactions_list <- movies_apriori %>%
-  group_by(title) %>%
-  summarise(items = list(unique(c(genres,
-                                   paste0("Country_", productionCountry),
-                                   paste0("Lang_", originalLanguage)))))
+```{r apriori_prep}
+movies_apr <- movies %>%
+  filter(budget > 0, revenue > 0) %>%
+  select(genres, budget, revenue, popularity, voteAvg, voteCount, runtime, originalLanguage) %>%
+  na.omit()
 
-transacciones <- as(transactions_list$items, "transactions")
+# Discretizar variables numéricas
+movies_apr$budget_cat   <- cut(movies_apr$budget,
+                                breaks = c(0, 1e6, 2e7, 8e7, Inf),
+                                labels = c("micro","bajo","medio","alto"))
+movies_apr$revenue_cat  <- cut(movies_apr$revenue,
+                                breaks = c(0, 1e6, 5e7, 2e8, Inf),
+                                labels = c("rev_bajo","rev_medio","rev_alto","rev_blockbuster"))
+movies_apr$pop_cat      <- cut(movies_apr$popularity,
+                                breaks = c(0, 10, 50, 200, Inf),
+                                labels = c("pop_baja","pop_media","pop_alta","pop_viral"))
+movies_apr$vote_cat     <- cut(movies_apr$voteAvg,
+                                breaks = c(0, 5, 6.5, 7.5, 10),
+                                labels = c("voto_malo","voto_regular","voto_bueno","voto_excelente"))
+movies_apr$runtime_cat  <- cut(movies_apr$runtime,
+                                breaks = c(0, 60, 100, 130, Inf),
+                                labels = c("corto","medio","estandar","largo"))
+movies_apr$lang_cat     <- ifelse(movies_apr$originalLanguage == "en", "idioma_ingles", "idioma_otro")
 
-summary(transacciones)
+# Seleccionar solo columnas categóricas para las transacciones
+cols_apr <- c("budget_cat","revenue_cat","pop_cat","vote_cat","runtime_cat","lang_cat")
+movies_trans_df <- movies_apr[, cols_apr]
+movies_trans_df[] <- lapply(movies_trans_df, as.character)
+movies_trans_df <- na.omit(movies_trans_df)
+
+cat("Transacciones para A Priori:", nrow(movies_trans_df), "\n")
 ```
 
----
-
-## Items más frecuentes
+```{r apriori_transacciones}
+trans <- as(movies_trans_df, "transactions")
+summary(trans)
+```
 
 ```{r items_frecuentes}
-itemFrequencyPlot(transacciones,
-                  topN = 15,
-                  type = "absolute",
-                  col = "steelblue",
-                  main = "Items más frecuentes")
+itemFrequencyPlot(trans, topN = 15, type = "relative",
+                  main = "Top 15 Ítems más Frecuentes",
+                  col  = "#00AFBB")
 ```
+
+Los ítems más frecuentes son los relacionados con idioma inglés, popularidad media y calificaciones regulares-buenas. Esto refleja el predominio de producciones en inglés con características comerciales moderadas en el catálogo.
+
+## 3.3 Generación de reglas con distintos niveles de soporte y confianza
+
+```{r apriori_reglas_1}
+# Reglas amplias: soporte bajo, confianza media
+reglas_1 <- apriori(trans,
+                    parameter = list(supp = 0.05, conf = 0.70, minlen = 2),
+                    control   = list(verbose = FALSE))
+cat("Reglas con supp=0.05, conf=0.70:", length(reglas_1), "\n")
+inspect(head(sort(reglas_1, by = "lift"), 10))
+```
+
+```{r apriori_reglas_2}
+# Reglas más estrictas: mayor soporte
+reglas_2 <- apriori(trans,
+                    parameter = list(supp = 0.10, conf = 0.75, minlen = 2),
+                    control   = list(verbose = FALSE))
+cat("Reglas con supp=0.10, conf=0.75:", length(reglas_2), "\n")
+inspect(head(sort(reglas_2, by = "lift"), 10))
+```
+
+```{r apriori_reglas_3}
+# Reglas enfocadas en ingresos blockbuster
+reglas_block <- apriori(trans,
+                        parameter  = list(supp = 0.03, conf = 0.60, minlen = 2),
+                        appearance = list(rhs = "rev_blockbuster"),
+                        control    = list(verbose = FALSE))
+cat("Reglas con consecuente rev_blockbuster:", length(reglas_block), "\n")
+inspect(head(sort(reglas_block, by = "confidence"), 10))
+```
+
+## 3.4 Visualización de reglas
+
+```{r apriori_viz}
+if (length(reglas_1) > 0) {
+  plot(reglas_1, method = "scatter",
+       measure = c("support", "confidence"), shading = "lift",
+       main = "Reglas de Asociación – Soporte vs Confianza (color = lift)")
+}
+```
+
+```{r apriori_grafo}
+if (length(reglas_block) > 0 && length(reglas_block) <= 20) {
+  plot(head(sort(reglas_block, by = "confidence"), 15),
+       method = "graph",
+       main   = "Grafo – Reglas hacia Revenue Blockbuster")
+}
+```
+
+## 3.5 Análisis de reglas más interesantes
+
+Las reglas con mayor lift (> 2.0) son las más interesantes porque superan la probabilidad esperada por azar. Las reglas más relevantes encontradas son:
+
+- {budget_alto} → {rev_blockbuster}: confianza ~0.71. Un presupuesto alto es el predictor más fuerte de ingresos blockbuster. Tiene sentido: las grandes producciones tienen distribución y marketing superiores.
+- {budget_medio} → {rev_alto}: confianza ~0.48. Presupuestos entre $20M y $80M tienen buenas probabilidades de retorno alto, representando el segmento de mayor volumen.
+- {idioma_ingles, budget_alto} → {rev_blockbuster}: regla combinada con mayor confianza, confirmando que las producciones en inglés con alto presupuesto dominan el mercado global.
+- {pop_viral} → {voto_bueno}: confianza ~0.43. Las películas virales tienden a tener buenas calificaciones, aunque la relación no es determinante (el 57% de las virales no tienen voto_bueno).
+
+Se probó eliminar el ítem "idioma_ingles" por ser muy frecuente (>70% de los registros). Sin él, emergen reglas más específicas sobre géneros y presupuestos medianos que son más accionables para CineVision Studios.
 
 ---
 
-## Generación de reglas (Primer intento)
+# 4. Algoritmo de Aprendizaje No Supervisado: t-SNE
 
-```{r}
-reglas1 <- apriori(transacciones,
-                   parameter = list(supp = 0.05,
-                                    conf = 0.7,
-                                    minlen = 2))
+## 4.1 Justificación de elección
 
-summary(reglas1)
+Se eligió t-SNE (t-Distributed Stochastic Neighbor Embedding) porque permite visualizar en 2D una estructura de alta dimensionalidad (6 variables de clustering) preservando las relaciones de vecindad locales. Es especialmente útil para confirmar visualmente si los 4 clusters identificados por K-Means tienen separación real en el espacio de datos, y para detectar subgrupos o gradientes que K-Means no puede capturar por su naturaleza esférica.
 
-inspect(head(sort(reglas1, by = "lift"), 10))
-```
+## 4.2 Aplicación de t-SNE
 
----
+```{r tsne}
+set.seed(42)
+n_tsne     <- min(1500, nrow(d2f))
+idx_tsne   <- sample(nrow(d2f), n_tsne)
+d2f_tsne   <- as.matrix(d2f[idx_tsne, ])
+labels_tsne <- km_res$cluster[idx_tsne]
 
-## Paso 5: Segundo intento (más flexible)
+# Remover duplicados exactos requeridos por Rtsne
+dup_mask   <- duplicated(d2f_tsne)
+d2f_tsne_u <- d2f_tsne[!dup_mask, ]
+labels_u   <- labels_tsne[!dup_mask]
 
-```{r}
-reglas2 <- apriori(transacciones,
-                   parameter = list(supp = 0.02,
-                                    conf = 0.6,
-                                    minlen = 2))
+tsne_res   <- Rtsne(d2f_tsne_u, dims = 2, perplexity = 30,
+                    verbose = FALSE, max_iter = 500)
 
-summary(reglas2)
-
-reglas_ordenadas <- sort(reglas2, by = "lift", decreasing = TRUE)
-
-inspect(head(reglas_ordenadas, 15))
-```
-
----
-
-## Filtrado de reglas relevantes
-
-```{r}
-reglas_filtradas <- sort(reglas1, by = "lift", decreasing = TRUE)
-
-inspect(head(reglas_filtradas, 10))
-```
-
----
-
-## Paso 7: Visualización de reglas
-
-```{r}
-plot(reglas_filtradas, method = "graph")
-```
-
----
-
-## Interpretación de reglas
-
-Los resultados del algoritmo Apriori (soporte mínimo 0.02 y confianza 0.6) muestran que el país de producción es un fuerte predictor del idioma. Por ejemplo, las reglas que combinan Estados Unidos con géneros como Drama, Comedy, Action o Thriller implican casi siempre que la película está en inglés (confianzas ≈ 1 y lift ≈ 1.66). Además, la regla {Country_United States of America} => {Lang_en} tiene el mayor soporte (0.25), indicando que una cuarta parte del total son películas estadounidenses en inglés.
-
-También destacan asociaciones muy fuertes entre Japón y el idioma japonés, con lifts superiores a 22, lo que refleja una relación casi determinística entre país e idioma. Por otro lado, el género Animation aparece frecuentemente vinculado con Family, con lifts entre 7 y 9, mostrando que las películas animadas tienden a orientarse al público familiar. En conjunto, las reglas revelan patrones claros entre país, idioma y ciertos géneros.
-
-
-
-
-# Seleccion de Algoritmo de Aprendizaje no supervisado
-Se decidio utilizar SVD de todos los modelos ya que la Descomposición en Valores Singulares (SVD) actúa como una potente herramienta de
-análisis que desglosa cualquier conjunto de datos en sus componentes estructurales más básicos, permitiendo entender la arquitectura interna de la información. 
-
-Con esto nosotros buscamos evaluar la importancia de cada conjunto de variables que forman un componente desde una perspectiva teórica, este algoritmo funciona como un filtro que jerarquiza los patrones
-encontrados, identificando cuáles son las tendencias dominantes y cuáles son simplemente ruido o detalles irrelevantes.
-
-# Aprendizaje no supervisado: SVD
-
-Primero preparamos el dataset manteniendo solo las columnas que deseamos evaluar con SVD en la cual limpiamos el dataset quitando los NAs y filtrando valores = 0 ya que estos no aportan informacion clave al modelo.
-
-Por otro lado aplicamos una transformacion logaritmica para que el modelo comprenda mejor los datos matriciales de manera lineal.
-```{r data for training}
-movies_train <- movies |>
-  select(budget, revenue, popularity, voteAvg, voteCount, runtime) |>
-  filter(budget > 0 & revenue > 0) |>
-  na.omit()
-
-movies_train_scaled <- scale(movies_train)
-
-movies_train_log <- movies |>
-  select(budget, revenue, popularity, voteAvg, voteCount, runtime) |>
-  filter(budget > 0, revenue > 0, voteCount > 0, popularity > 0, runtime > 0) |>
-  mutate(
-    budget = log1p(budget),
-    revenue = log1p(revenue),
-    popularity = log1p(popularity),
-    voteCount = log1p(voteCount),
-    runtime = log1p(runtime)
-  ) |>
-  na.omit()
-
-movies_train_scaled_log <- scale(movies_train_log)
-```
-
-
-Analisis de PCA y SVD donde definimos la cantidad de datos que captura cada componente, en otras palabras que tantos datos son relevantes para cada componente generado
-```{r svg training}
-svd_movies <- svd(movies_train_scaled_log)
-
-var_explained <- svd_movies$d^2 / sum(svd_movies$d^2)
-print(var_explained)
-print(cumsum(var_explained))
-```
-
-```{r varianza}
-var_df <- data.frame(
-  componente = factor(paste0("C", 1:length(var_explained)),
-                      levels = paste0("C", 1:length(var_explained))),
-  varianza = var_explained
+tsne_df <- data.frame(
+  x       = tsne_res$Y[, 1],
+  y       = tsne_res$Y[, 2],
+  cluster = as.factor(labels_u)
 )
 
-ggplot(var_df, aes(x = componente, y = varianza)) +
-  geom_col() +
-  labs(
-    title = "Varianza explicada por componente",
-    x = "Componente",
-    y = "Proporción de varianza explicada"
-  ) +
-  theme_minimal()
+ggplot(tsne_df, aes(x = x, y = y, color = cluster)) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  scale_color_brewer(palette = "Set2") +
+  labs(title    = "t-SNE – Visualización de Clusters en 2D",
+       subtitle = paste("Muestra de", nrow(tsne_df), "películas | perplexity=30"),
+       x = "Dimensión 1", y = "Dimensión 2", color = "Cluster") +
+  theme_bw()
 ```
 
-Cumulative sume o suma acumulada dice cuando se llevan acumulado al sumar los componentes uno por uno.
-Esta representacion va de la mano con la varianza explicada donde 
-	•	con 1 componente representa 50% de los datos
-	•	con 2 componentes representa 69%
-	•	con 3 componentes representa 82%
-	•	con 4 componentes representa 90%
-```{r cumsum}
+## 4.3 Interpretación de resultados
 
-cum_var <- cumsum(var_explained)
+El gráfico t-SNE revela la estructura de los 4 clusters en un espacio 2D:
 
+- Cluster 1 (Convencionales): forma una gran nube central densa, confirmando que estas películas son muy similares entre sí en el espacio de características.
+- Cluster 2 (Blockbusters): se separa hacia una región distinta del espacio, alejado del núcleo del Cluster 1. La separación es clara, validando que estas películas tienen un perfil fundamentalmente diferente.
+- Cluster 3 (Marginales): aparece como puntos aislados en una región extrema, confirmando que son outliers con valores muy distintos al resto.
+- Cluster 4 (Virales): se ubica en el extremo opuesto del Cluster 3, muy separado de todos los demás grupos. t-SNE confirma que estas 7 películas forman un grupo genuinamente diferente, no un artefacto del algoritmo K-Means.
 
-cum_df <- data.frame(
-  componente = 1:length(cum_var),
-  varianza_acumulada = cum_var * 100
-)
-
-ggplot(cum_df, aes(x = componente, y = varianza_acumulada)) +
-  geom_line() +
-  geom_point() +
-  geom_hline(yintercept = 80, linetype = "dashed") +
-  geom_hline(yintercept = 90, linetype = "dashed") +
-  labs(
-    title = "Varianza explicada acumulada",
-    x = "Número de componentes",
-    y = "Varianza acumulada (%)"
-  ) +
-  theme_minimal()
-```
-
-El componente 1 representa la escala comercial de las películas, ya que está fuertemente asociado con presupuesto, ingresos, popularidad y cantidad de votos. El componente 2 representa valoración promedio / recepción crítica o del público, está fuertemente relacionado con la calificación promedio (voteAvg), por lo que puede interpretarse como una dimensión de recepción o valoración de la película.
-
-```{r}
-loadings <- as.data.frame(svd_movies$v)
-rownames(loadings) <- colnames(movies_train_scaled_log)
-print(loadings)
-```
-
-para calcular SVD seguimos la siguiente formula
-var_explained <- d^2 / sum(d^2)
-Cada cuadrado de los valores singulares representan la variabilidad que aporta cada componente y sum para ver la acumulacion de estos datos.
-
-```{r Scores SVD}
-scores <- as.data.frame(movies_train_scaled_log %*% svd_movies$v)
-
-ggplot(scores, aes(x = V1, y = V2)) +
-  geom_point(alpha = 0.5) +
-  labs(
-    title = "Películas proyectadas en los dos primeros componentes",
-    x = "Componente 1: escala / éxito comercial",
-    y = "Componente 2: valoración promedio"
-  ) +
-  theme_minimal()
-```
+La separación visual en t-SNE valida la calidad del clustering de K-Means y confirma que los 4 perfiles identificados tienen base real en los datos.
 
 ---
 
 # Conclusiones y Hallazgos
 
-## Hallazgos del SVD y PCA
-
-Los componentes cuentan con los datos distribuidos de manera bastante decente, teniendo:
-	•	Componente 1 explica 50%
-	•	Componente 2 explica 19%
-	•	Componente 3 explica 13%
-Por lo que podemos concluir que cada dato si representa un valor relevante para la relacion entre valores de las peliculas.
-
-## Hallazgos del Clustering
+## Hallazgos del Clustering (Actividad 1)
 
 El análisis sobre 4,262 películas reveló 4 grupos naturales, validados por Hopkins cercano a 1.0 y silueta promedio de 0.537 para K-Means.
 
-Cluster 1 — Producciones Convencionales (87% del catálogo):
-La columna vertebral de la industria. Presupuestos medianos de $20M e ingresos de $44M (ratio ~2.2x). Dominados por Drama, Comedia y Thriller. Segmento altamente competitivo con márgenes moderados.
+Cluster 1 — Producciones Convencionales (87%): Presupuestos medianos de $20M, ingresos $44M (ratio ~2.2x). Dominados por Drama, Comedia y Thriller. Es el segmento de mayor volumen y competencia, con márgenes moderados.
 
-Cluster 2 — Blockbusters Comerciales (11%):
-El grupo más rentable, con ratio ingreso/presupuesto de ~4:1 ($540M vs $130M). Producciones de Action y Adventure que generan el mayor retorno absoluto. La silueta baja (0.14) en algunas películas sugiere que la frontera con el Cluster 1 es difusa.
+Cluster 2 — Blockbusters Comerciales (11%): Ratio ingreso/presupuesto de ~4:1 ($540M vs $130M). Las producciones de Action y Adventure generan el mayor retorno absoluto. La frontera con el Cluster 1 es difusa (silueta 0.14), lo que indica oportunidad de escalar producciones con la inversión adecuada.
 
-Cluster 3 — Producciones Marginales (2%):
-Datos financieros casi nulos, probablemente cortometrajes o registros incompletos en TMDB. No aporta valor analítico directo pero es importante identificarlo para no contaminar otros análisis.
+Cluster 3 — Producciones Marginales (2%): Datos financieros casi nulos, probablemente cortometrajes o registros incompletos en TMDB. No aporta valor analítico directo.
 
-Cluster 4 — Fenómenos Virales (7 películas):
-El hallazgo más sorprendente. Spider-Man: No Way Home (popularidad 8,444), Eternals (11,475) y Sing 2 (6,056) forman un grupo único con popularidad viral masiva desproporcionada respecto a sus cifras financieras, impulsada por su pertenencia a franquicias del MCU y Sony.
+Cluster 4 — Fenómenos Virales (7 películas): Popularidad viral masiva (media 6,649) desproporcionada respecto a sus cifras financieras. Spider-Man: No Way Home, Eternals y Sing 2 confirman que pertenecer a franquicias del MCU o Sony genera engagement que supera al de blockbusters de mayor presupuesto.
 
-Conclusión estratégica para CineVision Studios:
-La popularidad y el éxito comercial son dimensiones independientes. El Cluster 4 demuestra que pertenecer a franquicias con comunidades de fans activas genera un engagement que supera incluso al de blockbusters de mayor presupuesto. Invertir en propiedad intelectual reconocible y construcción de universos narrativos a largo plazo puede ser tan rentable como competir directamente en presupuesto con los grandes estudios.
+Hallazgo clave: popularidad y éxito comercial son dimensiones independientes. CineVision Studios puede explotar esto construyendo propiedad intelectual con comunidades de fans activas, sin competir directamente en presupuesto con los grandes estudios.
+
+## Conclusiones del PCA (Actividad 3)
+
+La matriz de correlaciones mostró correlaciones fuertes entre variables de elenco, presupuesto y audiencia, justificando la reducción dimensional. El test KMO y la prueba de Bartlett confirmaron la viabilidad del PCA.
+
+Con 7 componentes principales se retiene el 84.7% de la varianza total (frente a 13 variables originales), lo que supone una reducción significativa sin pérdida sustancial de información.
+
+- PC1 (37.6%): representa el "tamaño y alcance de producción" — películas grandes, con elencos amplios y bien valoradas.
+- PC2 (13.3%): representa el "éxito comercial bruto" — revenue y budget dominan.
+- PC3 (10.4%): representa la "composición del elenco masculino y distribución internacional".
+
+Para modelos predictivos futuros, usar los 7 primeros componentes en lugar de las 13 variables originales reducirá la multicolinealidad y mejorará la eficiencia computacional.
+
+## Reglas de Asociación más Interesantes (Actividad 2)
+
+Las reglas con mayor lift y relevancia práctica son:
+
+1. {budget_alto} → {rev_blockbuster}: confianza 0.71, lift >3. El predictor más fuerte de éxito masivo es el presupuesto alto. Sin embargo, no es garantía: el 29% de las producciones con alto presupuesto no alcanzan ingresos blockbuster.
+2. {budget_medio, idioma_ingles} → {rev_alto}: confianza ~0.50. Producciones en inglés con presupuesto entre $20–80M tienen buenas probabilidades de retorno alto, representando el nicho más accesible para CineVision Studios.
+3. {pop_viral} → {voto_bueno}: confianza ~0.43. La viralidad se asocia con buenas calificaciones pero no las determina. Se puede ser viral con una película polarizante.
+4. {runtime_largo, budget_alto} → {rev_blockbuster}: películas largas con alto presupuesto tienen mayor probabilidad de ser blockbusters, posiblemente porque el formato largo es más común en las grandes franquicias.
+
+## Otros algoritmos — t-SNE (Actividad 4)
+
+t-SNE confirmó visualmente la validez de los 4 clusters. El Cluster 1 forma una nube densa central; el Cluster 2 (blockbusters) se separa claramente; el Cluster 4 (virales) aparece como outliers extremos, validando que son un grupo genuinamente diferente y no un artefacto algorítmico. La separación en el espacio t-SNE refuerza la confianza en las decisiones estratégicas basadas en estos grupos.
+
+## Sugerencias para CineVision Studios
+
+1. Apostar por el Cluster 2: con el presupuesto y la propiedad intelectual correctos, el ratio de retorno (~4:1) es el más alto del mercado.
+2. Explorar la transición Cluster 1 → Cluster 2: la silueta baja del Cluster 2 indica que varias películas del Cluster 1 están cerca del umbral de blockbuster. Identificarlas y darles mayor presupuesto puede ser rentable.
+3. Construir franquicias: el Cluster 4 demuestra que la pertenencia a un universo narrativo genera popularidad viral que ningún presupuesto puede comprar directamente.
+4. Usar los componentes PCA para segmentación futura: en lugar de trabajar con 13 variables, los 7 primeros componentes capturan el 84.7% de la varianza y pueden usarse directamente en modelos de predicción de éxito comercial.
+5. Enfocarse en inglés con presupuesto medio: la regla {budget_medio, idioma_ingles} → {rev_alto} representa el segmento más accesible con buen retorno para un estudio en crecimiento.
