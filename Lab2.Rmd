@@ -505,6 +505,8 @@ En Budget vs Revenue, el Cluster 2 ocupa la esquina superior derecha combinando 
 
 ## Paso 0 - Análisis de viabilidad
 
+Revisamos que el dataset sea apto para aplicar el analisis de PCA
+
 ### KMO
 
 ```{r}
@@ -532,7 +534,7 @@ corrplot(matriz,
 ```
 
 ## Paso 1 - Estandarización
-
+con Scale estandarizamos los datos y aplicamos la media y la desviacion estandar
 ```{r}
 datos_std <- scale(datos_cuant_clean)
 apply(datos_std, 2, mean)
@@ -540,7 +542,7 @@ apply(datos_std, 2, sd)
 ```
 
 ## Paso 2 - PCA
-
+Separamos la varianza explicada y graficamente que tanto representa cada componente su set de datos.
 ```{r}
 compPrinc <- prcomp(datos_std)
 summary(compPrinc)
@@ -679,9 +681,17 @@ También destacan asociaciones muy fuertes entre Japón y el idioma japonés, co
 
 
 # Seleccion de Algoritmo de Aprendizaje no supervisado
+Se decidio utilizar SVD de todos los modelos ya que la Descomposición en Valores Singulares (SVD) actúa como una potente herramienta de
+análisis que desglosa cualquier conjunto de datos en sus componentes estructurales más básicos, permitiendo entender la arquitectura interna de la información. 
+
+Con esto nosotros buscamos evaluar la importancia de cada conjunto de variables que forman un componente desde una perspectiva teórica, este algoritmo funciona como un filtro que jerarquiza los patrones
+encontrados, identificando cuáles son las tendencias dominantes y cuáles son simplemente ruido o detalles irrelevantes.
 
 # Aprendizaje no supervisado: SVD
 
+Primero preparamos el dataset manteniendo solo las columnas que deseamos evaluar con SVD en la cual limpiamos el dataset quitando los NAs y filtrando valores = 0 ya que estos no aportan informacion clave al modelo.
+
+Por otro lado aplicamos una transformacion logaritmica para que el modelo comprenda mejor los datos matriciales de manera lineal.
 ```{r data for training}
 movies_train <- movies |>
   select(budget, revenue, popularity, voteAvg, voteCount, runtime) |>
@@ -705,10 +715,11 @@ movies_train_log <- movies |>
 movies_train_scaled_log <- scale(movies_train_log)
 ```
 
+
+Analisis de PCA y SVD donde definimos la cantidad de datos que captura cada componente, en otras palabras que tantos datos son relevantes para cada componente generado
 ```{r svg training}
 svd_movies <- svd(movies_train_scaled_log)
 
-# varianza explicada
 var_explained <- svd_movies$d^2 / sum(svd_movies$d^2)
 print(var_explained)
 print(cumsum(var_explained))
@@ -731,21 +742,56 @@ ggplot(var_df, aes(x = componente, y = varianza)) +
   theme_minimal()
 ```
 
+Cumulative sume o suma acumulada dice cuando se llevan acumulado al sumar los componentes uno por uno.
+Esta representacion va de la mano con la varianza explicada donde 
+	•	con 1 componente representa 50% de los datos
+	•	con 2 componentes representa 69%
+	•	con 3 componentes representa 82%
+	•	con 4 componentes representa 90%
+```{r cumsum}
+
+cum_var <- cumsum(var_explained)
+
+
+cum_df <- data.frame(
+  componente = 1:length(cum_var),
+  varianza_acumulada = cum_var * 100
+)
+
+ggplot(cum_df, aes(x = componente, y = varianza_acumulada)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = 80, linetype = "dashed") +
+  geom_hline(yintercept = 90, linetype = "dashed") +
+  labs(
+    title = "Varianza explicada acumulada",
+    x = "Número de componentes",
+    y = "Varianza acumulada (%)"
+  ) +
+  theme_minimal()
+```
+
+El componente 1 representa la escala comercial de las películas, ya que está fuertemente asociado con presupuesto, ingresos, popularidad y cantidad de votos. El componente 2 representa valoración promedio / recepción crítica o del público, está fuertemente relacionado con la calificación promedio (voteAvg), por lo que puede interpretarse como una dimensión de recepción o valoración de la película.
+
 ```{r}
-# loadings
 loadings <- as.data.frame(svd_movies$v)
 rownames(loadings) <- colnames(movies_train_scaled_log)
 print(loadings)
+```
 
-# scores
+para calcular SVD seguimos la siguiente formula
+var_explained <- d^2 / sum(d^2)
+Cada cuadrado de los valores singulares representan la variabilidad que aporta cada componente y sum para ver la acumulacion de estos datos.
+
+```{r Scores SVD}
 scores <- as.data.frame(movies_train_scaled_log %*% svd_movies$v)
 
 ggplot(scores, aes(x = V1, y = V2)) +
   geom_point(alpha = 0.5) +
   labs(
-    title = "Películas proyectadas con SVD",
-    x = "Componente 1",
-    y = "Componente 2"
+    title = "Películas proyectadas en los dos primeros componentes",
+    x = "Componente 1: escala / éxito comercial",
+    y = "Componente 2: valoración promedio"
   ) +
   theme_minimal()
 ```
@@ -753,6 +799,14 @@ ggplot(scores, aes(x = V1, y = V2)) +
 ---
 
 # Conclusiones y Hallazgos
+
+## Hallazgos del SVD y PCA
+
+Los componentes cuentan con los datos distribuidos de manera bastante decente, teniendo:
+	•	Componente 1 explica 50%
+	•	Componente 2 explica 19%
+	•	Componente 3 explica 13%
+Por lo que podemos concluir que cada dato si representa un valor relevante para la relacion entre valores de las peliculas.
 
 ## Hallazgos del Clustering
 
