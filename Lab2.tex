@@ -1,0 +1,1800 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Lab Aprendizaje No Supervisado},
+  pdfauthor={Pedro Avila, Javier Benitez, Brandon Rivera},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Lab Aprendizaje No Supervisado}
+\author{Pedro Avila, Javier Benitez, Brandon Rivera}
+\date{2026-02-07}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# dependecies}
+\CommentTok{\#install.packages("dplyr")}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Librerias}\label{librerias}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(ggplot2)}
+\FunctionTok{library}\NormalTok{(dplyr)}
+\FunctionTok{library}\NormalTok{(nortest)}
+\FunctionTok{library}\NormalTok{(scales)}
+\FunctionTok{library}\NormalTok{(lubridate)}
+\FunctionTok{library}\NormalTok{(cluster)}
+\FunctionTok{library}\NormalTok{(factoextra)}
+\FunctionTok{library}\NormalTok{(arules)}
+\FunctionTok{library}\NormalTok{(arulesViz)}
+\FunctionTok{library}\NormalTok{(hopkins)}
+\FunctionTok{library}\NormalTok{(fpc)}
+\FunctionTok{library}\NormalTok{(psych)}
+\FunctionTok{library}\NormalTok{(corrplot)}
+\FunctionTok{library}\NormalTok{(tidyr)}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Exploracion de datos}\label{exploracion-de-datos}
+
+\begin{itemize}
+\tightlist
+\item
+  Una exploración rápida de sus datos, para eso haga un resumen de su
+  conjunto de datos.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{movies }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"Movies\_2026.csv"}\NormalTok{, }\AttributeTok{fileEncoding =} \StringTok{"latin1"}\NormalTok{)}
+
+\FunctionTok{str}\NormalTok{(movies)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 'data.frame':    19883 obs. of  28 variables:
+##  $ id                       : int  1627085 1626914 1626898 1626808 1626678 1626234 1626010 1625551 1625043 1624457 ...
+##  $ budget                   : num  0 0 0 0 0 1 0 0 0 0 ...
+##  $ genres                   : chr  "Drama|Crime" "Animation" "Animation" "Thriller|Mystery|Documentary" ...
+##  $ homePage                 : chr  "" "" "" "" ...
+##  $ productionCompany        : chr  "" "" "" "" ...
+##  $ productionCompanyCountry : chr  "" "" "" "" ...
+##  $ productionCountry        : chr  "" "" "" "" ...
+##  $ revenue                  : num  0 0 0 0 0 1 0 0 0 0 ...
+##  $ runtime                  : int  95 3 2 5 12 14 39 90 96 106 ...
+##  $ video                    : logi  FALSE FALSE FALSE FALSE FALSE FALSE ...
+##  $ director                 : chr  "Javad Hakami" "Kimmy Gatewood" "Kimmy Gatewood" "Felipe RoldÃ¡n" ...
+##  $ actors                   : chr  "Mohsen Ghasabian|Aida Mahiani|Mehran Ghafourian|Payam Ahmadinia|Masoud Karamati|Roya Javidnia|Nasim Adabi|Siavash Cheraghipour" "Kameron Jackson|Laura Weaving|sara weaving|Bertha Williams" "Cedric Mitchell|Cajun mills|Laura Williams" "TomÃ¡s Tuchsznajder|Matias Junas|Martin Etcheverry|Romeo Jeirfimczuk|Agustin Pulido|Alec Drach|Franco Serio" ...
+##  $ actorsPopularity         : chr  "0.3453|0.1664|0.9684|0.3437|0.3713|0.2437|0.2796|0.2639" "0|0.0071|0|0" "0.0193|0|0.0143" "0|0|0|0|0|0|0" ...
+##  $ actorsCharacter          : chr  "|||||||" "Prince Charming|Evil Stepmother|Fairy Godmother|Cinderella" "Aladdin|Jafar|Jasmine" "||||||" ...
+##  $ originalTitle            : chr  "ØºÙ\u0088Ø·Ù\u0087 Ù\u0088Ø±" "Cinderella" "Aladdin" "EL ANILLO Y EL DECK" ...
+##  $ title                    : chr  "Immersed" "Cinderella" "Aladdin" "THE RING AND THE DECK" ...
+##  $ originalLanguage         : chr  "fa" "en" "en" "es" ...
+##  $ popularity               : num  0.0357 0.0357 0.0214 0.0429 0.0379 ...
+##  $ releaseDate              : chr  "2026-02-01" "2026-02-01" "2026-02-01" "2026-02-01" ...
+##  $ voteAvg                  : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ voteCount                : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ genresAmount             : int  2 1 1 3 1 1 1 1 3 1 ...
+##  $ productionCoAmount       : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ productionCountriesAmount: int  0 0 0 0 0 0 0 1 1 0 ...
+##  $ actorsAmount             : int  8 4 3 7 3 3 5 4 5 5 ...
+##  $ castWomenAmount          : int  2 0 0 0 0 0 0 3 1 2 ...
+##  $ castMenAmount            : int  5 0 0 0 0 0 3 0 3 3 ...
+##  $ releaseYear              : int  2026 2026 2026 2026 2026 2026 2026 2026 2026 2026 ...
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Al momento de usar \texttt{str()}, nos podemos hacer una idea de como
+  son los datos en todo el dataset, este analisis se hace luego en el
+  proyecto (en especifico en el inciso 2). Como nos podemos dar cuenta
+  varios de estos campos llegan a tener informacion vacia para su tipo
+  de dato respectivo.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{movies }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(movies, }\AttributeTok{select =} \SpecialCharTok{{-}}\NormalTok{id) }\CommentTok{\# we ain\textquotesingle{}t going to summarize the the id for pretty obvious reasons}
+\FunctionTok{summary}\NormalTok{(movies)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      budget             genres            homePage         productionCompany 
+##  Min.   :        0   Length:19883       Length:19883       Length:19883      
+##  1st Qu.:        0   Class :character   Class :character   Class :character  
+##  Median :        0   Mode  :character   Mode  :character   Mode  :character  
+##  Mean   :  9413280                                                           
+##  3rd Qu.:  1000000                                                           
+##  Max.   :380000000                                                           
+##                                                                              
+##  productionCompanyCountry productionCountry     revenue         
+##  Length:19883             Length:19883       Min.   :0.000e+00  
+##  Class :character         Class :character   1st Qu.:0.000e+00  
+##  Mode  :character         Mode  :character   Median :0.000e+00  
+##                                              Mean   :2.879e+07  
+##                                              3rd Qu.:3.306e+05  
+##                                              Max.   :2.847e+09  
+##                                                                 
+##     runtime         video           director            actors         
+##  Min.   :  0.00   Mode :logical   Length:19883       Length:19883      
+##  1st Qu.: 10.00   FALSE:19313     Class :character   Class :character  
+##  Median : 86.00   TRUE :84        Mode  :character   Mode  :character  
+##  Mean   : 66.09   NA's :486                                            
+##  3rd Qu.:103.00                                                        
+##  Max.   :750.00                                                        
+##                                                                        
+##  actorsPopularity   actorsCharacter    originalTitle         title          
+##  Length:19883       Length:19883       Length:19883       Length:19883      
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##                                                                             
+##                                                                             
+##                                                                             
+##                                                                             
+##  originalLanguage     popularity        releaseDate           voteAvg      
+##  Length:19883       Min.   :0.000e+00   Length:19883       Min.   : 0.000  
+##  Class :character   1st Qu.:5.460e-02   Class :character   1st Qu.: 0.000  
+##  Mode  :character   Median :8.502e+00   Mode  :character   Median : 5.400  
+##                     Mean   :2.625e+01                      Mean   : 3.837  
+##                     3rd Qu.:2.224e+01                      3rd Qu.: 6.800  
+##                     Max.   :1.147e+04                      Max.   :10.000  
+##                                                                            
+##    voteCount        genresAmount    productionCoAmount
+##  Min.   :    0.0   Min.   : 0.000   Min.   : 0.000    
+##  1st Qu.:    0.0   1st Qu.: 1.000   1st Qu.: 0.000    
+##  Median :    6.0   Median : 2.000   Median : 1.000    
+##  Mean   :  675.9   Mean   : 1.949   Mean   : 1.973    
+##  3rd Qu.:  423.0   3rd Qu.: 3.000   3rd Qu.: 3.000    
+##  Max.   :30788.0   Max.   :16.000   Max.   :89.000    
+##                                                       
+##  productionCountriesAmount  actorsAmount    castWomenAmount  castMenAmount   
+##  Min.   :  0.00            Min.   :     0   Min.   :     0   Min.   :     0  
+##  1st Qu.:  1.00            1st Qu.:     3   1st Qu.:     0   1st Qu.:     0  
+##  Median :  1.00            Median :     9   Median :     2   Median :     3  
+##  Mean   :  1.23            Mean   :  1082   Mean   :  3517   Mean   :  8224  
+##  3rd Qu.:  1.00            3rd Qu.:    21   3rd Qu.:     6   3rd Qu.:    12  
+##  Max.   :155.00            Max.   :919590   Max.   :922162   Max.   :922017  
+##                                             NA's   :37       NA's   :162     
+##   releaseYear  
+##  Min.   :1902  
+##  1st Qu.:2013  
+##  Median :2021  
+##  Mean   :2017  
+##  3rd Qu.:2025  
+##  Max.   :2026  
+##  NA's   :2
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Al resumirlos no podemos agarrar informacion tan relevante para hacer
+  cualquier tipo de analisis ademas de algunos valores numericos en
+  dichos campos. Como ver cantidad de ingresos maximos y medios,
+  prespuesto y ganancia por peliculas. No llega a ser informacion tan
+  valiosa solo viendola de por si, ya que son datos generales entre
+  todas y no de una solo empresa o por el estilo (se puede `queriear'
+  para lograrlo, pero ese no es el caso).
+\end{itemize}
+
+\subsection{Tipo de cada una de las
+variables}\label{tipo-de-cada-una-de-las-variables}
+
+\begin{itemize}
+\tightlist
+\item
+  (cualitativa ordinal o nominal, cuantitativa continua, cuantitativa
+  discreta)
+\end{itemize}
+
+\textbf{Cualitativas} Adicionalmente en estas clasificaciones las
+variables Actors y ActorsCharacters serian clasificados como
+cualitativos nominales pero no se agregaron porque es necesario una
+limpieza de datos antes.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cual\_nominales }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
+  \StringTok{"genres"}\NormalTok{,}
+  \StringTok{"homePage"}\NormalTok{,}
+  \StringTok{"productionCompany"}\NormalTok{,}
+  \StringTok{"productionCompanyCountry"}\NormalTok{,}
+  \StringTok{"productionCountry"}\NormalTok{,}
+  \StringTok{"video"}\NormalTok{,}
+  \StringTok{"director"}\NormalTok{,}
+  \StringTok{"originalTitle"}\NormalTok{,}
+  \StringTok{"title"}\NormalTok{,}
+  \StringTok{"originalLanguage"}
+\NormalTok{)}
+
+\NormalTok{cual\_ordinales }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
+  \StringTok{"releaseDate"}
+\NormalTok{)}
+
+\NormalTok{cualitativas }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(cual\_nominales, cual\_ordinales)}
+\NormalTok{cualitativas}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "genres"                   "homePage"                
+##  [3] "productionCompany"        "productionCompanyCountry"
+##  [5] "productionCountry"        "video"                   
+##  [7] "director"                 "originalTitle"           
+##  [9] "title"                    "originalLanguage"        
+## [11] "releaseDate"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{datos\_cual }\OtherTok{\textless{}{-}}\NormalTok{ movies[, cualitativas]}
+\FunctionTok{head}\NormalTok{(datos\_cual, }\DecValTok{5}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                         genres homePage productionCompany
+## 1                  Drama|Crime                           
+## 2                    Animation                           
+## 3                    Animation                           
+## 4 Thriller|Mystery|Documentary                           
+## 5                    Animation                           
+##   productionCompanyCountry productionCountry video       director
+## 1                                            FALSE   Javad Hakami
+## 2                                            FALSE Kimmy Gatewood
+## 3                                            FALSE Kimmy Gatewood
+## 4                                            FALSE Felipe RoldÃ¡n
+## 5                                            FALSE Kimmy Gatewood
+##                  originalTitle                 title originalLanguage
+## 1 ØºÙ\u0088Ø·Ù\u0087 Ù\u0088Ø±              Immersed               fa
+## 2                   Cinderella            Cinderella               en
+## 3                      Aladdin               Aladdin               en
+## 4          EL ANILLO Y EL DECK THE RING AND THE DECK               es
+## 5               Crimson High 3        Crimson High 3               en
+##   releaseDate
+## 1  2026-02-01
+## 2  2026-02-01
+## 3  2026-02-01
+## 4  2026-02-01
+## 5  2026-02-01
+\end{verbatim}
+
+\textbf{Cuantitativas} Adicionalmente en estas clasificaciones la
+variable ActorsPopularity serian clasificados como cuantitativos
+continuos pero no se agregaron porque es necesario una limpieza de datos
+antes.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cuant\_discretas }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
+  \StringTok{"budget"}\NormalTok{,}
+  \StringTok{"revenue"}\NormalTok{,}
+  \StringTok{"runtime"}\NormalTok{,}
+  \StringTok{"voteAvg"}\NormalTok{,}
+  \StringTok{"voteCount"}\NormalTok{,}
+  \StringTok{"genresAmount"}\NormalTok{,}
+  \StringTok{"productionCoAmount"}\NormalTok{,}
+  \StringTok{"productionCountriesAmount"}\NormalTok{,}
+  \StringTok{"actorsAmount"}\NormalTok{,}
+  \StringTok{"castWomenAmount"}\NormalTok{,}
+  \StringTok{"castMenAmount"}\NormalTok{,}
+  \StringTok{"releaseYear"}
+\NormalTok{)}
+
+\NormalTok{cuant\_continuas }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
+  \StringTok{"popularity"}
+\NormalTok{)}
+
+\NormalTok{cuantitativas }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(cuant\_discretas, cuant\_continuas)}
+\NormalTok{cuantitativas}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "budget"                    "revenue"                  
+##  [3] "runtime"                   "voteAvg"                  
+##  [5] "voteCount"                 "genresAmount"             
+##  [7] "productionCoAmount"        "productionCountriesAmount"
+##  [9] "actorsAmount"              "castWomenAmount"          
+## [11] "castMenAmount"             "releaseYear"              
+## [13] "popularity"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{datos\_cuant }\OtherTok{\textless{}{-}}\NormalTok{ movies[, cuantitativas]}
+\FunctionTok{head}\NormalTok{(datos\_cuant, }\DecValTok{5}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   budget revenue runtime voteAvg voteCount genresAmount productionCoAmount
+## 1      0       0      95       0         0            2                  0
+## 2      0       0       3       0         0            1                  0
+## 3      0       0       2       0         0            1                  0
+## 4      0       0       5       0         0            3                  0
+## 5      0       0      12       0         0            1                  0
+##   productionCountriesAmount actorsAmount castWomenAmount castMenAmount
+## 1                         0            8               2             5
+## 2                         0            4               0             0
+## 3                         0            3               0             0
+## 4                         0            7               0             0
+## 5                         0            3               0             0
+##   releaseYear popularity
+## 1        2026     0.0357
+## 2        2026     0.0357
+## 3        2026     0.0214
+## 4        2026     0.0429
+## 5        2026     0.0379
+\end{verbatim}
+
+\section{Análisis de Clustering}\label{anuxe1lisis-de-clustering}
+
+\subsection{Paso 0: Preparación de
+datos}\label{paso-0-preparaciuxf3n-de-datos}
+
+Se seleccionan 6 variables numéricas: \texttt{budget}, \texttt{revenue},
+\texttt{popularity}, \texttt{voteAvg}, \texttt{voteCount} y
+\texttt{runtime}. Se excluyen variables de texto, fechas y conteos
+auxiliares que no aportarían patrones útiles. Se eliminan registros con
+\texttt{budget\ =\ 0} y \texttt{revenue\ =\ 0} por ser datos
+incompletos. Tras la limpieza quedan 4,262 películas.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Variables numéricas seleccionadas para clustering}
+\NormalTok{vars\_cluster }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"budget"}\NormalTok{, }\StringTok{"revenue"}\NormalTok{, }\StringTok{"popularity"}\NormalTok{, }\StringTok{"voteAvg"}\NormalTok{, }\StringTok{"voteCount"}\NormalTok{, }\StringTok{"runtime"}\NormalTok{)}
+
+\CommentTok{\# Eliminar NAs, duplicados y películas sin datos comerciales}
+\NormalTok{d2f\_raw }\OtherTok{\textless{}{-}} \FunctionTok{na.omit}\NormalTok{(movies[, }\FunctionTok{c}\NormalTok{(}\StringTok{"title"}\NormalTok{, vars\_cluster)])}
+\NormalTok{d2f\_raw }\OtherTok{\textless{}{-}}\NormalTok{ d2f\_raw[}\SpecialCharTok{!}\FunctionTok{duplicated}\NormalTok{(d2f\_raw}\SpecialCharTok{$}\NormalTok{title), ]}
+\NormalTok{d2f\_raw }\OtherTok{\textless{}{-}}\NormalTok{ d2f\_raw[d2f\_raw}\SpecialCharTok{$}\NormalTok{budget }\SpecialCharTok{\textgreater{}} \DecValTok{0} \SpecialCharTok{\&}\NormalTok{ d2f\_raw}\SpecialCharTok{$}\NormalTok{revenue }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{, ]}
+
+\CommentTok{\# Escalar datos (necesario: las variables tienen magnitudes muy distintas)}
+\NormalTok{d2f }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{scale}\NormalTok{(d2f\_raw[, vars\_cluster]))}
+\FunctionTok{rownames}\NormalTok{(d2f) }\OtherTok{\textless{}{-}}\NormalTok{ d2f\_raw}\SpecialCharTok{$}\NormalTok{title}
+
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Títulos duplicados:"}\NormalTok{, }\FunctionTok{sum}\NormalTok{(}\FunctionTok{duplicated}\NormalTok{(}\FunctionTok{rownames}\NormalTok{(d2f))), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Títulos duplicados: 0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Filas totales para clustering:"}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Filas totales para clustering: 4262
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Paso 1: Tendencia al agrupamiento --- Hopkins y
+VAT}\label{paso-1-tendencia-al-agrupamiento-hopkins-y-vat}
+
+\subsubsection{Estadístico de Hopkins}\label{estaduxedstico-de-hopkins}
+
+El estadístico de Hopkins mide la tendencia al agrupamiento natural.
+Valores cercanos a 1 indican alta tendencia; cercanos a 0.5 sugieren
+distribución aleatoria.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+\NormalTok{muestra\_hop }\OtherTok{\textless{}{-}}\NormalTok{ d2f[}\FunctionTok{sample}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(d2f), }\FunctionTok{min}\NormalTok{(}\DecValTok{500}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f))), ]}
+\NormalTok{hop\_resultado }\OtherTok{\textless{}{-}} \FunctionTok{hopkins}\NormalTok{(muestra\_hop, }\AttributeTok{m =} \DecValTok{50}\NormalTok{)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Estadístico de Hopkins:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(hop\_resultado, }\DecValTok{4}\NormalTok{), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Estadístico de Hopkins: 1
+\end{verbatim}
+
+El estadístico resultó muy cercano a 1.0, confirmando alta tendencia al
+agrupamiento natural. Aplicar clustering sobre estos datos es
+estadísticamente válido.
+
+\subsubsection{VAT (Visual Assessment of
+Tendency)}\label{vat-visual-assessment-of-tendency}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+\NormalTok{n\_vat }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(}\DecValTok{150}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f))}
+\NormalTok{muestra\_vat }\OtherTok{\textless{}{-}}\NormalTok{ d2f[}\FunctionTok{sample}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(d2f), n\_vat), ]}
+\NormalTok{dist\_vat }\OtherTok{\textless{}{-}} \FunctionTok{dist}\NormalTok{(muestra\_vat, }\AttributeTok{method =} \StringTok{"euclidean"}\NormalTok{)}
+
+\FunctionTok{fviz\_dist}\NormalTok{(dist\_vat, }\AttributeTok{show\_labels =} \ConstantTok{FALSE}\NormalTok{,}
+          \AttributeTok{gradient =} \FunctionTok{list}\NormalTok{(}\AttributeTok{low =} \StringTok{"\#00AFBB"}\NormalTok{, }\AttributeTok{mid =} \StringTok{"white"}\NormalTok{, }\AttributeTok{high =} \StringTok{"\#FC4E07"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"VAT – Evaluación Visual de Tendencia al Agrupamiento"}\NormalTok{,}
+       \AttributeTok{subtitle =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Muestra de"}\NormalTok{, n\_vat, }\StringTok{"películas. Bloques azules diagonales indican grupos naturales."}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: `aes_string()` was deprecated in ggplot2 3.0.0.
+## i Please use tidy evaluation idioms with `aes()`.
+## i See also `vignette("ggplot2-in-packages")` for more information.
+## i The deprecated feature was likely used in the factoextra package.
+##   Please report the issue at <https://github.com/kassambara/factoextra/issues>.
+## This warning is displayed once per session.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/vat-1.pdf}}
+
+La gráfica muestra la matriz de distancias reordenada. Se distingue una
+zona azul central (la mayoría de películas con perfil comercial similar)
+y zonas naranjas en los bordes correspondientes a producciones con
+valores extremos en popularidad o ingresos. Esto confirma la presencia
+de grupos naturales, aunque con una distribución asimétrica donde la
+gran mayoría comparte características parecidas.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Paso 2: Determinación del número óptimo de
+clusters}\label{paso-2-determinaciuxf3n-del-nuxfamero-uxf3ptimo-de-clusters}
+
+\begin{quote}
+Nota técnica: Se usa una muestra de 2,000 películas para los métodos de
+determinación de k, evitando el alto consumo de RAM que generaría
+calcular matrices de distancias O(n²) sobre el dataset completo.
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+\NormalTok{n\_muestra }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(}\DecValTok{2000}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f))}
+\NormalTok{idx\_muestra }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(d2f), n\_muestra)}
+\NormalTok{d2f\_muestra }\OtherTok{\textless{}{-}}\NormalTok{ d2f[idx\_muestra, ]}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Muestra utilizada para determinar k:"}\NormalTok{, n\_muestra, }\StringTok{"películas}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Muestra utilizada para determinar k: 2000 películas
+\end{verbatim}
+
+\subsubsection{Método del Codo (WSS)}\label{muxe9todo-del-codo-wss}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wss }\OtherTok{\textless{}{-}} \FunctionTok{numeric}\NormalTok{(}\DecValTok{10}\NormalTok{)}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{) \{}
+\NormalTok{  wss[i] }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(}\FunctionTok{kmeans}\NormalTok{(d2f\_muestra, }\AttributeTok{centers =}\NormalTok{ i, }\AttributeTok{nstart =} \DecValTok{10}\NormalTok{)}\SpecialCharTok{$}\NormalTok{withinss)}
+\NormalTok{\}}
+\FunctionTok{plot}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{, wss, }\AttributeTok{type =} \StringTok{"b"}\NormalTok{,}
+     \AttributeTok{xlab =} \StringTok{"Número de Clusters"}\NormalTok{,}
+     \AttributeTok{ylab =} \StringTok{"Suma de cuadrados dentro del grupo"}\NormalTok{,}
+     \AttributeTok{main =} \StringTok{"Método del Codo – WSS"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/metodo_codo_manual-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fviz\_nbclust}\NormalTok{(d2f\_muestra, kmeans, }\AttributeTok{method =} \StringTok{"wss"}\NormalTok{, }\AttributeTok{k.max =} \DecValTok{10}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"Método del Codo (WSS) – K{-}Means"}\NormalTok{,}
+       \AttributeTok{subtitle =} \StringTok{"El \textquotesingle{}codo\textquotesingle{} señala el k donde la reducción de WSS se estabiliza"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Número de Clusters (k)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"WSS intra{-}cluster"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/codo_factoextra-1.pdf}}
+
+La curva WSS muestra una reducción pronunciada hasta k=4, después de la
+cual la disminución se vuelve marginal. El ``codo'' se forma claramente
+en k=4, por lo que agregar más clusters no justifica la complejidad
+adicional.
+
+\subsubsection{Método de la Silueta}\label{muxe9todo-de-la-silueta}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fviz\_nbclust}\NormalTok{(d2f\_muestra, kmeans, }\AttributeTok{method =} \StringTok{"silhouette"}\NormalTok{, }\AttributeTok{k.max =} \DecValTok{10}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"Método de Silueta – K{-}Means"}\NormalTok{,}
+       \AttributeTok{subtitle =} \StringTok{"El k con mayor silueta promedio es el más adecuado"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Número de Clusters (k)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Ancho de Silueta Promedio"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/silueta_factoextra-1.pdf}}
+
+La silueta confirma k=4 como el número óptimo, con un ancho promedio de
+0.573 (``estructura razonable''). Para k≥5 la silueta cae por debajo de
+0.31, generando subgrupos sin coherencia real.
+
+\subsubsection{Gap Statistic}\label{gap-statistic}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fviz\_nbclust}\NormalTok{(d2f\_muestra, kmeans,}
+             \AttributeTok{nstart  =} \DecValTok{25}\NormalTok{,}
+             \AttributeTok{method  =} \StringTok{"gap\_stat"}\NormalTok{,}
+             \AttributeTok{nboot   =} \DecValTok{50}\NormalTok{,}
+             \AttributeTok{verbose =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"Gap Statistic – K{-}Means"}\NormalTok{,}
+       \AttributeTok{subtitle =} \StringTok{"El k óptimo es donde Gap(k) es máximo o se estabiliza"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Número de Clusters (k)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Gap Statistic"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+## Warning: did not converge in 10 iterations
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/gap_factoextra-1.pdf}}
+
+\subsubsection{Tabla resumen de silueta por
+k}\label{tabla-resumen-de-silueta-por-k}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sil\_scores }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(}\DecValTok{2}\SpecialCharTok{:}\DecValTok{8}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(k) \{}
+\NormalTok{  km }\OtherTok{\textless{}{-}} \FunctionTok{kmeans}\NormalTok{(d2f\_muestra, }\AttributeTok{centers =}\NormalTok{ k, }\AttributeTok{nstart =} \DecValTok{10}\NormalTok{, }\AttributeTok{iter.max =} \DecValTok{50}\NormalTok{)}
+\NormalTok{  ss }\OtherTok{\textless{}{-}} \FunctionTok{silhouette}\NormalTok{(km}\SpecialCharTok{$}\NormalTok{cluster, }\FunctionTok{dist}\NormalTok{(d2f\_muestra))}
+  \FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(ss[, }\DecValTok{3}\NormalTok{]), }\DecValTok{4}\NormalTok{)}
+\NormalTok{\})}
+
+\NormalTok{sil\_tabla }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{k              =} \DecValTok{2}\SpecialCharTok{:}\DecValTok{8}\NormalTok{,}
+  \AttributeTok{Silhouette     =}\NormalTok{ sil\_scores,}
+  \AttributeTok{Interpretacion =} \FunctionTok{ifelse}\NormalTok{(sil\_scores }\SpecialCharTok{\textgreater{}=} \FloatTok{0.70}\NormalTok{, }\StringTok{"Estructura fuerte"}\NormalTok{,}
+                   \FunctionTok{ifelse}\NormalTok{(sil\_scores }\SpecialCharTok{\textgreater{}=} \FloatTok{0.50}\NormalTok{, }\StringTok{"Estructura razonable"}\NormalTok{,}
+                   \FunctionTok{ifelse}\NormalTok{(sil\_scores }\SpecialCharTok{\textgreater{}=} \FloatTok{0.25}\NormalTok{, }\StringTok{"Estructura débil"}\NormalTok{, }\StringTok{"Sin estructura"}\NormalTok{)))}
+\NormalTok{)}
+\FunctionTok{print}\NormalTok{(sil\_tabla)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   k Silhouette       Interpretacion
+## 1 2     0.5618 Estructura razonable
+## 2 3     0.5895 Estructura razonable
+## 3 4     0.2211       Sin estructura
+## 4 5     0.2511     Estructura débil
+## 5 6     0.2583     Estructura débil
+## 6 7     0.2674     Estructura débil
+## 7 8     0.2784     Estructura débil
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{k\_final }\OtherTok{\textless{}{-}}\NormalTok{ sil\_tabla}\SpecialCharTok{$}\NormalTok{k[}\FunctionTok{which.max}\NormalTok{(sil\_tabla}\SpecialCharTok{$}\NormalTok{Silhouette)]}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{K seleccionado:"}\NormalTok{, k\_final, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## K seleccionado: 3
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Silueta promedio:"}\NormalTok{, }\FunctionTok{max}\NormalTok{(sil\_tabla}\SpecialCharTok{$}\NormalTok{Silhouette), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Silueta promedio: 0.5895
+\end{verbatim}
+
+Los tres métodos coinciden en k=4 como el número óptimo. k=2, 3 y 4
+califican como ``Estructura razonable'' (silueta ≥ 0.50), siendo k=4 el
+que maximiza la separación con 0.573. A partir de k=5 la calidad se
+degrada. Se selecciona k=4.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Paso 3: Agrupamiento}\label{paso-3-agrupamiento}
+
+\subsubsection{Algoritmo 1: K-Means}\label{algoritmo-1-k-means}
+
+K-Means se ejecuta sobre el dataset completo (4,262 películas). No
+requiere matriz de distancias, por lo que es eficiente en memoria. Se
+usa \texttt{nstart\ =\ 25} para evitar óptimos locales.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+\NormalTok{km\_res }\OtherTok{\textless{}{-}} \FunctionTok{kmeans}\NormalTok{(d2f, }\AttributeTok{centers =}\NormalTok{ k\_final, }\AttributeTok{nstart =} \DecValTok{25}\NormalTok{, }\AttributeTok{iter.max =} \DecValTok{100}\NormalTok{)}
+\NormalTok{d2f\_raw}\SpecialCharTok{$}\NormalTok{cluster\_km }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(km\_res}\SpecialCharTok{$}\NormalTok{cluster)}
+
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Tamaño de cada cluster (K{-}Means):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Tamaño de cada cluster (K-Means):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(km\_res}\SpecialCharTok{$}\NormalTok{size)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 3713  458   91
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Varianza explicada (BSS/TSS):"}\NormalTok{, }\FunctionTok{round}\NormalTok{(km\_res}\SpecialCharTok{$}\NormalTok{betweenss }\SpecialCharTok{/}\NormalTok{ km\_res}\SpecialCharTok{$}\NormalTok{totss }\SpecialCharTok{*} \DecValTok{100}\NormalTok{, }\DecValTok{1}\NormalTok{), }\StringTok{"\%}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Varianza explicada (BSS/TSS): 40.1 %
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{123}\NormalTok{)}
+\NormalTok{idx\_plot }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(d2f), }\FunctionTok{min}\NormalTok{(}\DecValTok{1000}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f)))}
+\FunctionTok{plotcluster}\NormalTok{(d2f[idx\_plot, ], km\_res}\SpecialCharTok{$}\NormalTok{cluster[idx\_plot],}
+            \AttributeTok{main =} \StringTok{"K{-}Means – plotcluster (muestra 1,000 puntos)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/kmeans_clustering-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fviz\_cluster}\NormalTok{(km\_res, }\AttributeTok{data =}\NormalTok{ d2f,}
+             \AttributeTok{geom         =} \StringTok{"point"}\NormalTok{,}
+             \AttributeTok{ellipse.type =} \StringTok{"norm"}\NormalTok{,}
+             \AttributeTok{palette      =} \StringTok{"Set2"}\NormalTok{,}
+             \AttributeTok{alpha        =} \FloatTok{0.4}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"K{-}Means"}\NormalTok{,}
+       \AttributeTok{subtitle =} \FunctionTok{paste}\NormalTok{(}\StringTok{"k ="}\NormalTok{, k\_final, }\StringTok{"| n ="}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f), }\StringTok{"películas"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/kmeans_clustering-2.pdf}}
+
+K-Means produjo 4 grupos muy desiguales: el Cluster 1 concentra
+\textasciitilde3,719 películas (87\%), mientras los demás son
+minoritarios (467, 77 y 7 películas). Esta distribución refleja la
+industria real, donde la gran mayoría son producciones estándar y solo
+un pequeño porcentaje alcanza el nivel de blockbuster o fenómeno viral.
+El modelo explica el 52.7\% de la varianza total.
+
+\subsubsection{Algoritmo 2: Clustering Jerárquico
+(Ward)}\label{algoritmo-2-clustering-jeruxe1rquico-ward}
+
+El jerárquico requiere una matriz de distancias O(n²), por lo que se
+aplica sobre una muestra de 1,500 películas para mantener el consumo de
+RAM manejable.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{456}\NormalTok{)}
+\NormalTok{n\_hc }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(}\DecValTok{1500}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f))}
+\NormalTok{idx\_hc }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\FunctionTok{nrow}\NormalTok{(d2f), n\_hc)}
+\NormalTok{d2f\_hc }\OtherTok{\textless{}{-}}\NormalTok{ d2f[idx\_hc, ]}
+
+\NormalTok{dist\_hc }\OtherTok{\textless{}{-}} \FunctionTok{dist}\NormalTok{(d2f\_hc, }\AttributeTok{method =} \StringTok{"euclidean"}\NormalTok{)}
+\NormalTok{hc\_res  }\OtherTok{\textless{}{-}} \FunctionTok{hclust}\NormalTok{(dist\_hc, }\AttributeTok{method =} \StringTok{"ward.D2"}\NormalTok{)}
+
+\FunctionTok{plot}\NormalTok{(hc\_res, }\AttributeTok{labels =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{hang =} \SpecialCharTok{{-}}\DecValTok{1}\NormalTok{,}
+     \AttributeTok{main =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Dendrograma – Clustering Jerárquico (Ward)}\SpecialCharTok{\textbackslash{}n}\StringTok{Muestra:"}\NormalTok{, n\_hc, }\StringTok{"películas"}\NormalTok{),}
+     \AttributeTok{xlab =} \StringTok{"Películas"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"Distancia (Ward)"}\NormalTok{)}
+\FunctionTok{rect.hclust}\NormalTok{(hc\_res, }\AttributeTok{k =}\NormalTok{ k\_final, }\AttributeTok{border =} \DecValTok{2}\SpecialCharTok{:}\NormalTok{(k\_final }\SpecialCharTok{+} \DecValTok{1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/hierarchical_clustering-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{hc\_clusters }\OtherTok{\textless{}{-}} \FunctionTok{cutree}\NormalTok{(hc\_res, }\AttributeTok{k =}\NormalTok{ k\_final)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Distribución por cluster (Jerárquico):}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Distribución por cluster (Jerárquico):
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(}\FunctionTok{table}\NormalTok{(hc\_clusters))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## hc_clusters
+##    1    2    3 
+## 1388  108    4
+\end{verbatim}
+
+El dendrograma muestra una división principal en dos ramas a nivel alto,
+con subdivisiones más finas en niveles inferiores. El corte a k=4 es
+justificado por los saltos de altura entre fusiones. Al igual que
+K-Means, produce un cluster dominante con la mayoría de películas y
+grupos pequeños de producciones excepcionales.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Paso 4: Calidad del agrupamiento ---
+Silueta}\label{paso-4-calidad-del-agrupamiento-silueta}
+
+Ambos algoritmos se evalúan sobre la misma muestra (n=1,500) para
+comparación justa.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{km\_hc  }\OtherTok{\textless{}{-}} \FunctionTok{kmeans}\NormalTok{(d2f\_hc, }\AttributeTok{centers =}\NormalTok{ k\_final, }\AttributeTok{nstart =} \DecValTok{25}\NormalTok{)}
+\NormalTok{sil\_km }\OtherTok{\textless{}{-}} \FunctionTok{silhouette}\NormalTok{(km\_hc}\SpecialCharTok{$}\NormalTok{cluster, dist\_hc)}
+\NormalTok{sil\_hc }\OtherTok{\textless{}{-}} \FunctionTok{silhouette}\NormalTok{(hc\_clusters,   dist\_hc)}
+
+\NormalTok{calidad }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{Algoritmo           =} \FunctionTok{c}\NormalTok{(}\StringTok{"K{-}Means"}\NormalTok{, }\StringTok{"Jerárquico (Ward)"}\NormalTok{),}
+  \AttributeTok{Silhouette\_Promedio =} \FunctionTok{round}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\FunctionTok{mean}\NormalTok{(sil\_km[, }\DecValTok{3}\NormalTok{]), }\FunctionTok{mean}\NormalTok{(sil\_hc[, }\DecValTok{3}\NormalTok{])), }\DecValTok{4}\NormalTok{),}
+  \AttributeTok{Clusters            =}\NormalTok{ k\_final}
+\NormalTok{)}
+\FunctionTok{print}\NormalTok{(calidad)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           Algoritmo Silhouette_Promedio Clusters
+## 1           K-Means              0.5532        3
+## 2 Jerárquico (Ward)              0.6001        3
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(sil\_km,}
+     \AttributeTok{col    =}\NormalTok{ (}\DecValTok{2}\SpecialCharTok{:}\NormalTok{(k\_final }\SpecialCharTok{+} \DecValTok{1}\NormalTok{))[sil\_km[, }\DecValTok{1}\NormalTok{]],}
+     \AttributeTok{border =} \ConstantTok{NA}\NormalTok{,}
+     \AttributeTok{main   =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Silueta K{-}Means | k ="}\NormalTok{, k\_final,}
+                    \StringTok{"| avg ="}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(sil\_km[, }\DecValTok{3}\NormalTok{]), }\DecValTok{3}\NormalTok{)),}
+     \AttributeTok{sub    =} \FunctionTok{paste}\NormalTok{(}\StringTok{"n ="}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f\_hc), }\StringTok{"películas (muestra)"}\NormalTok{))}
+\FunctionTok{abline}\NormalTok{(}\AttributeTok{v =} \FunctionTok{mean}\NormalTok{(sil\_km[, }\DecValTok{3}\NormalTok{]), }\AttributeTok{lty =} \DecValTok{2}\NormalTok{, }\AttributeTok{col =} \StringTok{"red"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/silueta_kmeans-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(sil\_hc,}
+     \AttributeTok{col    =}\NormalTok{ (}\DecValTok{2}\SpecialCharTok{:}\NormalTok{(k\_final }\SpecialCharTok{+} \DecValTok{1}\NormalTok{))[sil\_hc[, }\DecValTok{1}\NormalTok{]],}
+     \AttributeTok{border =} \ConstantTok{NA}\NormalTok{,}
+     \AttributeTok{main   =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Silueta Jerárquico (Ward) | k ="}\NormalTok{, k\_final,}
+                    \StringTok{"| avg ="}\NormalTok{, }\FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(sil\_hc[, }\DecValTok{3}\NormalTok{]), }\DecValTok{3}\NormalTok{)),}
+     \AttributeTok{sub    =} \FunctionTok{paste}\NormalTok{(}\StringTok{"n ="}\NormalTok{, }\FunctionTok{nrow}\NormalTok{(d2f\_hc), }\StringTok{"películas (muestra)"}\NormalTok{))}
+\FunctionTok{abline}\NormalTok{(}\AttributeTok{v =} \FunctionTok{mean}\NormalTok{(sil\_hc[, }\DecValTok{3}\NormalTok{]), }\AttributeTok{lty =} \DecValTok{2}\NormalTok{, }\AttributeTok{col =} \StringTok{"red"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/silueta_jerarquico-1.pdf}}
+
+K-Means obtuvo silueta promedio de 0.5376, superando al Jerárquico
+(0.4691). En la silueta de K-Means, el Cluster 4 (7 películas) alcanza
+la silueta más alta (\textasciitilde0.80), indicando que estas películas
+son muy distintas del resto. El Cluster 1 tiene silueta de
+\textasciitilde0.60 con buena cohesión interna. El Cluster 2 muestra
+silueta baja (\textasciitilde0.14), lo que refleja que la frontera entre
+``película exitosa'' y ``blockbuster'' es difusa. El jerárquico genera
+un cluster mixto con silueta muy baja (0.06), indicando menor calidad de
+separación. Se selecciona K-Means como algoritmo final por su mayor
+silueta y porque opera sobre el dataset completo.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mejor\_algoritmo }\OtherTok{\textless{}{-}}\NormalTok{ calidad}\SpecialCharTok{$}\NormalTok{Algoritmo[}\FunctionTok{which.max}\NormalTok{(calidad}\SpecialCharTok{$}\NormalTok{Silhouette\_Promedio)]}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Algoritmo con mejor calidad de clusters:"}\NormalTok{, mejor\_algoritmo, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Algoritmo con mejor calidad de clusters: Jerárquico (Ward)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Se usará K{-}Means (dataset completo) para la interpretación final.}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Se usará K-Means (dataset completo) para la interpretación final.
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Paso 5: Interpretación de los
+grupos}\label{paso-5-interpretaciuxf3n-de-los-grupos}
+
+\subsubsection{5.1 Medidas de tendencia central por
+cluster}\label{medidas-de-tendencia-central-por-cluster}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{perfil }\OtherTok{\textless{}{-}}\NormalTok{ d2f\_raw }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(cluster\_km) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarise}\NormalTok{(}
+    \AttributeTok{n\_peliculas     =} \FunctionTok{n}\NormalTok{(),}
+    \AttributeTok{budget\_media    =} \FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(budget,     }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+    \AttributeTok{budget\_mediana  =} \FunctionTok{round}\NormalTok{(}\FunctionTok{median}\NormalTok{(budget,   }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+    \AttributeTok{revenue\_media   =} \FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(revenue,    }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+    \AttributeTok{revenue\_mediana =} \FunctionTok{round}\NormalTok{(}\FunctionTok{median}\NormalTok{(revenue,  }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+    \AttributeTok{pop\_media       =} \FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(popularity, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\DecValTok{2}\NormalTok{),}
+    \AttributeTok{voteAvg\_media   =} \FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(voteAvg,    }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\DecValTok{2}\NormalTok{),}
+    \AttributeTok{voteCount\_media =} \FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(voteCount,  }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\DecValTok{0}\NormalTok{),}
+    \AttributeTok{runtime\_media   =} \FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(runtime,    }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }\DecValTok{1}\NormalTok{)}
+\NormalTok{  )}
+\FunctionTok{print}\NormalTok{(perfil)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 3 x 10
+##   cluster_km n_peliculas budget_media budget_mediana revenue_media
+##   <fct>            <int>        <dbl>          <dbl>         <dbl>
+## 1 1                 3713     28256866       20000000      73298217
+## 2 2                  458    132382572      131000000     546959218
+## 3 3                   91      2418948            100       5246201
+## # i 5 more variables: revenue_mediana <dbl>, pop_media <dbl>,
+## #   voteAvg_media <dbl>, voteCount_media <dbl>, runtime_media <dbl>
+\end{verbatim}
+
+Con base en los perfiles obtenidos, los 4 clusters se identifican como:
+
+\begin{itemize}
+\item
+  Cluster 1 --- ``Producciones Convencionales'' (n≈3,719, 87\%):
+  Presupuesto medio \$28M, ingresos \$73M, popularidad 38. La gran
+  mayoría del catálogo con características comerciales estándar. Drama,
+  Comedia y Thriller dominan.
+\item
+  Cluster 2 --- ``Blockbusters Comerciales'' (n≈467, 11\%): Presupuesto
+  \$130M, ingresos \$540M, popularidad 147. Alto rendimiento comercial
+  con géneros de Action y Adventure. Incluye Avatar, Avengers: Endgame y
+  Titanic.
+\item
+  Cluster 3 --- ``Producciones Marginales'' (n≈77, 2\%): Presupuesto y
+  revenue con medianas cercanas a cero, popularidad 2.8, duración
+  \textasciitilde18 min. Probablemente cortometrajes o producciones con
+  registros financieros incompletos.
+\item
+  Cluster 4 --- ``Fenómenos Virales'' (n=7, \textless1\%): Popularidad
+  extrema (media 6,649, máximo 11,475), presupuesto moderado \$120M.
+  Spider-Man: No Way Home, Eternals y Sing 2 lideran este cluster por su
+  engagement viral masivo en plataformas digitales.
+\end{itemize}
+
+\subsubsection{5.2 Boxplots comparativos por
+variable}\label{boxplots-comparativos-por-variable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{for}\NormalTok{ (v }\ControlFlowTok{in}\NormalTok{ vars\_cluster) \{}
+\NormalTok{  p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(d2f\_raw, }\FunctionTok{aes\_string}\NormalTok{(}\AttributeTok{x =} \StringTok{"cluster\_km"}\NormalTok{, }\AttributeTok{y =}\NormalTok{ v, }\AttributeTok{fill =} \StringTok{"cluster\_km"}\NormalTok{)) }\SpecialCharTok{+}
+    \FunctionTok{geom\_boxplot}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.7}\NormalTok{, }\AttributeTok{outlier.color =} \StringTok{"red"}\NormalTok{, }\AttributeTok{outlier.size =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Set2"}\NormalTok{) }\SpecialCharTok{+}
+    \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Distribución de"}\NormalTok{, v, }\StringTok{"por Cluster"}\NormalTok{),}
+         \AttributeTok{subtitle =} \StringTok{"Outliers en rojo = películas atípicas dentro del grupo"}\NormalTok{,}
+         \AttributeTok{x =} \StringTok{"Cluster"}\NormalTok{, }\AttributeTok{y =}\NormalTok{ v) }\SpecialCharTok{+}
+    \FunctionTok{theme\_bw}\NormalTok{() }\SpecialCharTok{+} \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{)}
+  \FunctionTok{print}\NormalTok{(p)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_boxplots-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_boxplots-2.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_boxplots-3.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_boxplots-4.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_boxplots-5.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_boxplots-6.pdf}}
+
+Los boxplots confirman la interpretación de los clusters. En budget y
+revenue el Cluster 2 se ubica claramente por encima de los demás. La
+variable popularity es la que mejor separa los clusters, con el Cluster
+4 completamente fuera de escala. voteAvg es similar entre clusters
+(6.5--7.5), indicando que la calidad percibida no es el principal
+diferenciador. Runtime es homogéneo, salvo el Cluster 3 que incluye
+cortometrajes (\textasciitilde18 min de media).
+
+\subsubsection{5.3 Géneros por cluster}\label{guxe9neros-por-cluster}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{movies\_con\_cluster }\OtherTok{\textless{}{-}}\NormalTok{ movies }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(title }\SpecialCharTok{\%in\%}\NormalTok{ d2f\_raw}\SpecialCharTok{$}\NormalTok{title) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{left\_join}\NormalTok{(d2f\_raw[, }\FunctionTok{c}\NormalTok{(}\StringTok{"title"}\NormalTok{, }\StringTok{"cluster\_km"}\NormalTok{)], }\AttributeTok{by =} \StringTok{"title"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  tidyr}\SpecialCharTok{::}\FunctionTok{separate\_rows}\NormalTok{(genres, }\AttributeTok{sep =} \StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{|"}\NormalTok{)}
+
+\NormalTok{tabla\_generos }\OtherTok{\textless{}{-}}\NormalTok{ movies\_con\_cluster }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(cluster\_km, genres) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarise}\NormalTok{(}\AttributeTok{frecuencia =} \FunctionTok{n}\NormalTok{(), }\AttributeTok{.groups =} \StringTok{"drop"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{arrange}\NormalTok{(cluster\_km, }\FunctionTok{desc}\NormalTok{(frecuencia))}
+
+\NormalTok{top\_generos }\OtherTok{\textless{}{-}}\NormalTok{ tabla\_generos }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(cluster\_km) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{slice\_max}\NormalTok{(frecuencia, }\AttributeTok{n =} \DecValTok{5}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(top\_generos)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 15 x 3
+## # Groups:   cluster_km [3]
+##    cluster_km genres            frecuencia
+##    <fct>      <chr>                  <int>
+##  1 1          "Drama"                 1677
+##  2 1          "Comedy"                1332
+##  3 1          "Thriller"              1164
+##  4 1          "Action"                1032
+##  5 1          "Adventure"              688
+##  6 2          "Adventure"              295
+##  7 2          "Action"                 266
+##  8 2          "Science Fiction"        151
+##  9 2          "Fantasy"                139
+## 10 2          "Comedy"                 117
+## 11 3          "Drama"                   32
+## 12 3          "Comedy"                  29
+## 13 3          ""                        14
+## 14 3          "Horror"                  14
+## 15 3          "Thriller"                14
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggplot}\NormalTok{(top\_generos, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =} \FunctionTok{reorder}\NormalTok{(genres, frecuencia), }\AttributeTok{y =}\NormalTok{ frecuencia, }\AttributeTok{fill =}\NormalTok{ cluster\_km)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_col}\NormalTok{(}\AttributeTok{show.legend =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{cluster\_km, }\AttributeTok{scales =} \StringTok{"free\_y"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{coord\_flip}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Set2"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"Top 5 Géneros por Cluster"}\NormalTok{,}
+       \AttributeTok{subtitle =} \StringTok{"Distribución de géneros dentro de cada grupo de películas"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Género"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Frecuencia"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_freq_genres-1.pdf}}
+
+El Cluster 1 está dominado por Drama y Comedia, géneros de producción
+accesible y presupuestos moderados. El Cluster 2 tiene Adventure y
+Action como géneros principales, consistente con las grandes
+producciones de Hollywood. El Cluster 4 comparte géneros con el Cluster
+2 (Adventure, Action, Sci-Fi), confirmando que son películas de
+franquicias masivas cuyo diferenciador es la popularidad viral.
+
+\subsubsection{5.4 Perfil normalizado
+comparativo}\label{perfil-normalizado-comparativo}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{perfil\_norm }\OtherTok{\textless{}{-}}\NormalTok{ perfil }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(cluster\_km, budget\_media, revenue\_media, pop\_media, voteAvg\_media, runtime\_media) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\FunctionTok{across}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{cluster\_km, }\SpecialCharTok{\textasciitilde{}} \FunctionTok{round}\NormalTok{((. }\SpecialCharTok{{-}} \FunctionTok{min}\NormalTok{(.)) }\SpecialCharTok{/}\NormalTok{ (}\FunctionTok{max}\NormalTok{(.) }\SpecialCharTok{{-}} \FunctionTok{min}\NormalTok{(.)), }\DecValTok{4}\NormalTok{)))}
+
+\FunctionTok{cat}\NormalTok{(}\StringTok{"=== Perfil normalizado de clusters (0 = mínimo, 1 = máximo) ===}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## === Perfil normalizado de clusters (0 = mínimo, 1 = máximo) ===
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{print}\NormalTok{(perfil\_norm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 3 x 6
+##   cluster_km budget_media revenue_media pop_media voteAvg_media runtime_media
+##   <fct>             <dbl>         <dbl>     <dbl>         <dbl>         <dbl>
+## 1 1                 0.199         0.126     0.139         0.929         0.840
+## 2 2                 1             1         1             1             1    
+## 3 3                 0             0         0             0             0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{perfil\_long }\OtherTok{\textless{}{-}}\NormalTok{ perfil\_norm }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  tidyr}\SpecialCharTok{::}\FunctionTok{pivot\_longer}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{cluster\_km, }\AttributeTok{names\_to =} \StringTok{"variable"}\NormalTok{, }\AttributeTok{values\_to =} \StringTok{"valor"}\NormalTok{)}
+
+\FunctionTok{ggplot}\NormalTok{(perfil\_long, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ variable, }\AttributeTok{y =}\NormalTok{ valor, }\AttributeTok{fill =}\NormalTok{ cluster\_km)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_col}\NormalTok{(}\AttributeTok{position =} \StringTok{"dodge"}\NormalTok{, }\AttributeTok{alpha =} \FloatTok{0.8}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Set2"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"Perfil Comparativo de Clusters (valores normalizados)"}\NormalTok{,}
+       \AttributeTok{subtitle =} \StringTok{"Identifica en qué dimensiones se diferencia cada grupo"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Variable"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Valor Normalizado (0–1)"}\NormalTok{, }\AttributeTok{fill =} \StringTok{"Cluster"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.text.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{angle =} \DecValTok{30}\NormalTok{, }\AttributeTok{hjust =} \DecValTok{1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_perfil_comparativo-1.pdf}}
+
+El Cluster 4 domina en popularidad (valor 1.0) con valores intermedios
+en budget y revenue, confirmando que popularidad y éxito financiero no
+son equivalentes. El Cluster 2 lidera en budget y revenue. El Cluster 3
+tiene valores cercanos a cero en todas las variables. El Cluster 1
+mantiene valores moderados en todas las dimensiones.
+
+\subsubsection{5.5 Dispersión Budget vs Revenue y Popularidad vs
+Calificación}\label{dispersiuxf3n-budget-vs-revenue-y-popularidad-vs-calificaciuxf3n}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggplot}\NormalTok{(d2f\_raw, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ budget, }\AttributeTok{y =}\NormalTok{ revenue, }\AttributeTok{color =}\NormalTok{ cluster\_km)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{size =} \FloatTok{1.5}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_color\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Set2"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_x\_continuous}\NormalTok{(}\AttributeTok{labels =}\NormalTok{ scales}\SpecialCharTok{::}\NormalTok{comma) }\SpecialCharTok{+}
+  \FunctionTok{scale\_y\_continuous}\NormalTok{(}\AttributeTok{labels =}\NormalTok{ scales}\SpecialCharTok{::}\NormalTok{comma) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"Budget vs Revenue por Cluster"}\NormalTok{,}
+       \AttributeTok{subtitle =} \StringTok{"Cada color representa un grupo con características similares"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Presupuesto (Budget)"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Ingresos (Revenue)"}\NormalTok{, }\AttributeTok{color =} \StringTok{"Cluster"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_scatter_revenue_budget-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggplot}\NormalTok{(d2f\_raw, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ popularity, }\AttributeTok{y =}\NormalTok{ voteAvg, }\AttributeTok{color =}\NormalTok{ cluster\_km)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{size =} \FloatTok{1.5}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{scale\_color\_brewer}\NormalTok{(}\AttributeTok{palette =} \StringTok{"Set2"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{title    =} \StringTok{"Popularidad vs Calificación Promedio por Cluster"}\NormalTok{,}
+       \AttributeTok{subtitle =} \StringTok{"¿Los clusters más populares son también los mejor calificados?"}\NormalTok{,}
+       \AttributeTok{x =} \StringTok{"Popularidad"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Calificación Promedio (voteAvg)"}\NormalTok{, }\AttributeTok{color =} \StringTok{"Cluster"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/cluster_scatter_popularity_vote-1.pdf}}
+
+En Budget vs Revenue, el Cluster 2 ocupa la esquina superior derecha
+combinando grandes presupuestos con grandes ingresos. El Cluster 1 forma
+una nube densa en el rango bajo-medio. El Cluster 4 no alcanza los
+ingresos más altos, coherente con su naturaleza viral más que
+financiera. En el gráfico de popularidad vs calificación, el Cluster 4
+se separa drásticamente en el eje de popularidad, pero sus
+calificaciones (7.3--8.5) son similares a las de los otros clusters.
+Esto indica que la popularidad en TMDB responde más a franquicias
+reconocibles que a la calidad objetiva del film.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{PCA}\label{pca}
+
+\subsection{Paso 0 - Análisis de
+viabilidad}\label{paso-0---anuxe1lisis-de-viabilidad}
+
+\subsubsection{KMO}\label{kmo}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{datos\_cuant\_clean }\OtherTok{\textless{}{-}}\NormalTok{ datos\_cuant[, }\FunctionTok{sapply}\NormalTok{(datos\_cuant, is.numeric)]}
+\NormalTok{datos\_cuant\_clean }\OtherTok{\textless{}{-}} \FunctionTok{na.omit}\NormalTok{(datos\_cuant\_clean)}
+\FunctionTok{KMO}\NormalTok{(datos\_cuant\_clean)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Kaiser-Meyer-Olkin factor adequacy
+## Call: KMO(r = datos_cuant_clean)
+## Overall MSA =  0.84
+## MSA for each item = 
+##                    budget                   revenue                   runtime 
+##                      0.85                      0.75                      0.92 
+##                   voteAvg                 voteCount              genresAmount 
+##                      0.88                      0.85                      0.92 
+##        productionCoAmount productionCountriesAmount              actorsAmount 
+##                      0.89                      0.57                      0.82 
+##           castWomenAmount             castMenAmount               releaseYear 
+##                      0.81                      0.49                      0.87 
+##                popularity 
+##                      0.90
+\end{verbatim}
+
+\subsubsection{Esfericidad de Bartlett}\label{esfericidad-de-bartlett}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cortest.bartlett}\NormalTok{(}\FunctionTok{cor}\NormalTok{(datos\_cuant\_clean), }\AttributeTok{n =} \FunctionTok{nrow}\NormalTok{(datos\_cuant\_clean))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $chisq
+## [1] 115646.6
+## 
+## $p.value
+## [1] 0
+## 
+## $df
+## [1] 78
+\end{verbatim}
+
+\subsection{Visualización de
+correlaciones}\label{visualizaciuxf3n-de-correlaciones}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{matriz }\OtherTok{\textless{}{-}} \FunctionTok{cor}\NormalTok{(datos\_cuant\_clean, }\AttributeTok{use =} \StringTok{"pairwise.complete.obs"}\NormalTok{)}
+\FunctionTok{corrplot}\NormalTok{(matriz,}
+         \AttributeTok{method =} \StringTok{"color"}\NormalTok{,}
+         \AttributeTok{type =} \StringTok{"upper"}\NormalTok{,}
+         \AttributeTok{addCoef.col =} \StringTok{"black"}\NormalTok{,}
+         \AttributeTok{tl.col =} \StringTok{"black"}\NormalTok{,}
+         \AttributeTok{tl.srt =} \DecValTok{45}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/unnamed-chunk-5-1.pdf}}
+
+\subsection{Paso 1 - Estandarización}\label{paso-1---estandarizaciuxf3n}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{datos\_std }\OtherTok{\textless{}{-}} \FunctionTok{scale}\NormalTok{(datos\_cuant\_clean)}
+\FunctionTok{apply}\NormalTok{(datos\_std, }\DecValTok{2}\NormalTok{, mean)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                    budget                   revenue                   runtime 
+##              5.057293e-18             -3.322679e-17             -6.086636e-17 
+##                   voteAvg                 voteCount              genresAmount 
+##             -3.906434e-17              2.896058e-17              1.045531e-17 
+##        productionCoAmount productionCountriesAmount              actorsAmount 
+##              5.644135e-17             -7.570402e-17              5.605938e-18 
+##           castWomenAmount             castMenAmount               releaseYear 
+##              7.311016e-18             -5.968415e-18             -3.106698e-15 
+##                popularity 
+##              5.162070e-19
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{apply}\NormalTok{(datos\_std, }\DecValTok{2}\NormalTok{, sd)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                    budget                   revenue                   runtime 
+##                         1                         1                         1 
+##                   voteAvg                 voteCount              genresAmount 
+##                         1                         1                         1 
+##        productionCoAmount productionCountriesAmount              actorsAmount 
+##                         1                         1                         1 
+##           castWomenAmount             castMenAmount               releaseYear 
+##                         1                         1                         1 
+##                popularity 
+##                         1
+\end{verbatim}
+
+\subsection{Paso 2 - PCA}\label{paso-2---pca}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{compPrinc }\OtherTok{\textless{}{-}} \FunctionTok{prcomp}\NormalTok{(datos\_std)}
+\FunctionTok{summary}\NormalTok{(compPrinc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Importance of components:
+##                           PC1    PC2    PC3     PC4     PC5     PC6     PC7
+## Standard deviation     2.2118 1.3154 1.1649 0.97870 0.87276 0.85329 0.76082
+## Proportion of Variance 0.3763 0.1331 0.1044 0.07368 0.05859 0.05601 0.04453
+## Cumulative Proportion  0.3763 0.5094 0.6138 0.68749 0.74608 0.80209 0.84662
+##                            PC8     PC9    PC10    PC11    PC12    PC13
+## Standard deviation     0.72903 0.64735 0.62165 0.55580 0.43058 0.40333
+## Proportion of Variance 0.04088 0.03224 0.02973 0.02376 0.01426 0.01251
+## Cumulative Proportion  0.88750 0.91974 0.94946 0.97323 0.98749 1.00000
+\end{verbatim}
+
+\subsection{Scree Plot}\label{scree-plot}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fviz\_eig}\NormalTok{(compPrinc)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in geom_bar(stat = "identity", fill = barfill, color = barcolor, :
+## Ignoring empty aesthetic: `width`.
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/unnamed-chunk-8-1.pdf}}
+
+\subsection{Visualización de
+variables}\label{visualizaciuxf3n-de-variables}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fviz\_pca\_var}\NormalTok{(compPrinc,}
+             \AttributeTok{col.var =} \StringTok{"cos2"}\NormalTok{,}
+             \AttributeTok{gradient.cols =} \FunctionTok{c}\NormalTok{(}\StringTok{"\#00AFBB"}\NormalTok{, }\StringTok{"\#E7B800"}\NormalTok{, }\StringTok{"\#FC4E07"}\NormalTok{),}
+             \AttributeTok{repel =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+## i Please use `linewidth` instead.
+## i The deprecated feature was likely used in the ggpubr package.
+##   Please report the issue at <https://github.com/kassambara/ggpubr/issues>.
+## This warning is displayed once per session.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/unnamed-chunk-9-1.pdf}}
+
+\section{Algoritmo A Priori}\label{algoritmo-a-priori}
+
+El objetivo del algoritmo A Priori es descubrir patrones frecuentes de
+co-ocurrencia entre características categóricas de las películas.
+
+Se analizarán principalmente:
+
+\begin{itemize}
+\tightlist
+\item
+  Géneros
+\item
+  País de producción
+\item
+  Idioma original
+\end{itemize}
+
+Buscamos reglas del tipo:
+
+Si una película pertenece al género X → entonces también suele
+pertenecer al género Y.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Preparación de datos}\label{preparaciuxf3n-de-datos}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(arules)}
+\FunctionTok{library}\NormalTok{(arulesViz)}
+
+\NormalTok{movies\_apriori }\OtherTok{\textless{}{-}}\NormalTok{ movies }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(title, genres, productionCountry, originalLanguage) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(genres))}
+
+\NormalTok{movies\_apriori }\OtherTok{\textless{}{-}}\NormalTok{ movies\_apriori }\SpecialCharTok{\%\textgreater{}\%}
+\NormalTok{  tidyr}\SpecialCharTok{::}\FunctionTok{separate\_rows}\NormalTok{(genres, }\AttributeTok{sep =} \StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{|"}\NormalTok{)}
+
+\NormalTok{transactions\_list }\OtherTok{\textless{}{-}}\NormalTok{ movies\_apriori }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(title) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarise}\NormalTok{(}\AttributeTok{items =} \FunctionTok{list}\NormalTok{(}\FunctionTok{unique}\NormalTok{(}\FunctionTok{c}\NormalTok{(genres,}
+                                   \FunctionTok{paste0}\NormalTok{(}\StringTok{"Country\_"}\NormalTok{, productionCountry),}
+                                   \FunctionTok{paste0}\NormalTok{(}\StringTok{"Lang\_"}\NormalTok{, originalLanguage)))))}
+
+\NormalTok{transacciones }\OtherTok{\textless{}{-}} \FunctionTok{as}\NormalTok{(transactions\_list}\SpecialCharTok{$}\NormalTok{items, }\StringTok{"transactions"}\NormalTok{)}
+
+\FunctionTok{summary}\NormalTok{(transacciones)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## transactions as itemMatrix in sparse format with
+##  19386 rows (elements/itemsets/transactions) and
+##  1521 columns (items) and a density of 0.002693743 
+## 
+## most frequent items:
+##                          Lang_en                            Drama 
+##                            11664                             6431 
+## Country_United States of America                           Comedy 
+##                             4881                             4766 
+##                         Country_                          (Other) 
+##                             3871                            47815 
+## 
+## element (itemset/transaction) length distribution:
+## sizes
+##    3    4    5    6    7    8    9   10   11   12   13 
+## 8061 5074 3844 1571  539  201   60   21   10    3    2 
+## 
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   3.000   3.000   4.000   4.097   5.000  13.000 
+## 
+## includes extended item information - examples:
+##      labels
+## 1          
+## 2    Action
+## 3 Adventure
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Items más frecuentes}\label{items-muxe1s-frecuentes}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{itemFrequencyPlot}\NormalTok{(transacciones,}
+                  \AttributeTok{topN =} \DecValTok{15}\NormalTok{,}
+                  \AttributeTok{type =} \StringTok{"absolute"}\NormalTok{,}
+                  \AttributeTok{col =} \StringTok{"steelblue"}\NormalTok{,}
+                  \AttributeTok{main =} \StringTok{"Items más frecuentes"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/items_frecuentes-1.pdf}}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Generación de reglas (Primer
+intento)}\label{generaciuxf3n-de-reglas-primer-intento}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{reglas1 }\OtherTok{\textless{}{-}} \FunctionTok{apriori}\NormalTok{(transacciones,}
+                   \AttributeTok{parameter =} \FunctionTok{list}\NormalTok{(}\AttributeTok{supp =} \FloatTok{0.05}\NormalTok{,}
+                                    \AttributeTok{conf =} \FloatTok{0.7}\NormalTok{,}
+                                    \AttributeTok{minlen =} \DecValTok{2}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Apriori
+## 
+## Parameter specification:
+##  confidence minval smax arem  aval originalSupport maxtime support minlen
+##         0.7    0.1    1 none FALSE            TRUE       5    0.05      2
+##  maxlen target  ext
+##      10  rules TRUE
+## 
+## Algorithmic control:
+##  filter tree heap memopt load sort verbose
+##     0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+## 
+## Absolute minimum support count: 969 
+## 
+## set item appearances ...[0 item(s)] done [0.00s].
+## set transactions ...[1521 item(s), 19386 transaction(s)] done [0.01s].
+## sorting and recoding items ... [20 item(s)] done [0.00s].
+## creating transaction tree ... done [0.00s].
+## checking subsets of size 1 2 3 done [0.00s].
+## writing ... [12 rule(s)] done [0.00s].
+## creating S4 object  ... done [0.00s].
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(reglas1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## set of 12 rules
+## 
+## rule length distribution (lhs + rhs):sizes
+## 2 3 
+## 8 4 
+## 
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   2.000   2.000   2.000   2.333   3.000   3.000 
+## 
+## summary of quality measures:
+##     support          confidence        coverage            lift      
+##  Min.   :0.05937   Min.   :0.7081   Min.   :0.06257   Min.   :1.177  
+##  1st Qu.:0.06511   1st Qu.:0.7592   1st Qu.:0.07930   1st Qu.:1.262  
+##  Median :0.08235   Median :0.7764   Median :0.09115   Median :1.290  
+##  Mean   :0.09671   Mean   :0.8568   Mean   :0.11306   Mean   :1.424  
+##  3rd Qu.:0.09727   3rd Qu.:0.9986   3rd Qu.:0.12942   3rd Qu.:1.660  
+##  Max.   :0.25132   Max.   :1.0000   Max.   :0.25178   Max.   :1.662  
+##      count     
+##  Min.   :1151  
+##  1st Qu.:1262  
+##  Median :1596  
+##  Mean   :1875  
+##  3rd Qu.:1886  
+##  Max.   :4872  
+## 
+## mining info:
+##           data ntransactions support confidence
+##  transacciones         19386    0.05        0.7
+##                                                                                  call
+##  apriori(data = transacciones, parameter = list(supp = 0.05, conf = 0.7, minlen = 2))
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{inspect}\NormalTok{(}\FunctionTok{head}\NormalTok{(}\FunctionTok{sort}\NormalTok{(reglas1, }\AttributeTok{by =} \StringTok{"lift"}\NormalTok{), }\DecValTok{10}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      lhs                                    rhs          support confidence   coverage     lift count
+## [1]  {Country_United States of America,                                                              
+##       Drama}                             => {Lang_en} 0.08882699  1.0000000 0.08882699 1.662037  1722
+## [2]  {Comedy,                                                                                        
+##       Country_United States of America}  => {Lang_en} 0.09341793  0.9994481 0.09346951 1.661120  1811
+## [3]  {Action,                                                                                        
+##       Country_United States of America}  => {Lang_en} 0.06251934  0.9991756 0.06257093 1.660667  1212
+## [4]  {Country_United States of America,                                                              
+##       Thriller}                          => {Lang_en} 0.06597545  0.9984387 0.06607861 1.659442  1279
+## [5]  {Country_United States of America}  => {Lang_en} 0.25131538  0.9981561 0.25177963 1.658972  4872
+## [6]  {Thriller}                          => {Lang_en} 0.13282781  0.7786513 0.17058702 1.294147  2575
+## [7]  {Family}                            => {Lang_en} 0.06839988  0.7740806 0.08836274 1.286551  1326
+## [8]  {Science Fiction}                   => {Lang_en} 0.06061075  0.7684761 0.07887135 1.277236  1175
+## [9]  {Horror}                            => {Lang_en} 0.09259259  0.7631803 0.12132467 1.268434  1795
+## [10] {Crime}                             => {Lang_en} 0.05937274  0.7474026 0.07943877 1.242211  1151
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Paso 5: Segundo intento (más
+flexible)}\label{paso-5-segundo-intento-muxe1s-flexible}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{reglas2 }\OtherTok{\textless{}{-}} \FunctionTok{apriori}\NormalTok{(transacciones,}
+                   \AttributeTok{parameter =} \FunctionTok{list}\NormalTok{(}\AttributeTok{supp =} \FloatTok{0.02}\NormalTok{,}
+                                    \AttributeTok{conf =} \FloatTok{0.6}\NormalTok{,}
+                                    \AttributeTok{minlen =} \DecValTok{2}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Apriori
+## 
+## Parameter specification:
+##  confidence minval smax arem  aval originalSupport maxtime support minlen
+##         0.6    0.1    1 none FALSE            TRUE       5    0.02      2
+##  maxlen target  ext
+##      10  rules TRUE
+## 
+## Algorithmic control:
+##  filter tree heap memopt load sort verbose
+##     0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+## 
+## Absolute minimum support count: 387 
+## 
+## set item appearances ...[0 item(s)] done [0.00s].
+## set transactions ...[1521 item(s), 19386 transaction(s)] done [0.01s].
+## sorting and recoding items ... [29 item(s)] done [0.00s].
+## creating transaction tree ... done [0.00s].
+## checking subsets of size 1 2 3 4 done [0.00s].
+## writing ... [82 rule(s)] done [0.00s].
+## creating S4 object  ... done [0.00s].
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(reglas2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## set of 82 rules
+## 
+## rule length distribution (lhs + rhs):sizes
+##  2  3  4 
+## 19 46 17 
+## 
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   2.000   3.000   3.000   2.976   3.000   4.000 
+## 
+## summary of quality measures:
+##     support          confidence        coverage            lift       
+##  Min.   :0.02012   Min.   :0.6143   Min.   :0.02094   Min.   : 1.021  
+##  1st Qu.:0.02294   1st Qu.:0.6995   1st Qu.:0.03174   1st Qu.: 1.269  
+##  Median :0.02902   Median :0.7713   Median :0.03722   Median : 1.658  
+##  Mean   :0.04169   Mean   :0.8158   Mean   :0.05199   Mean   : 3.516  
+##  3rd Qu.:0.04343   3rd Qu.:0.9962   3rd Qu.:0.05674   3rd Qu.: 2.517  
+##  Max.   :0.25132   Max.   :1.0000   Max.   :0.25178   Max.   :28.627  
+##      count       
+##  Min.   : 390.0  
+##  1st Qu.: 444.8  
+##  Median : 562.5  
+##  Mean   : 808.3  
+##  3rd Qu.: 842.0  
+##  Max.   :4872.0  
+## 
+## mining info:
+##           data ntransactions support confidence
+##  transacciones         19386    0.02        0.6
+##                                                                                  call
+##  apriori(data = transacciones, parameter = list(supp = 0.02, conf = 0.6, minlen = 2))
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{reglas\_ordenadas }\OtherTok{\textless{}{-}} \FunctionTok{sort}\NormalTok{(reglas2, }\AttributeTok{by =} \StringTok{"lift"}\NormalTok{, }\AttributeTok{decreasing =} \ConstantTok{TRUE}\NormalTok{)}
+
+\FunctionTok{inspect}\NormalTok{(}\FunctionTok{head}\NormalTok{(reglas\_ordenadas, }\DecValTok{15}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      lhs                                    rhs                support confidence   coverage      lift count
+## [1]  {Animation,                                                                                            
+##       Lang_ja}                           => {Country_Japan} 0.02285154  0.9022403 0.02532756 28.626565   443
+## [2]  {Country_Japan}                     => {Lang_ja}       0.03125967  0.9918167 0.03151759 22.202492   606
+## [3]  {Lang_ja}                           => {Country_Japan} 0.03125967  0.6997691 0.04467141 22.202492   606
+## [4]  {Animation,                                                                                            
+##       Country_Japan}                     => {Lang_ja}       0.02285154  0.9910515 0.02305788 22.185362   443
+## [5]  {Country_FR}                        => {Lang_fr}       0.02011761  0.9112150 0.02207779 16.146996   390
+## [6]  {Animation,                                                                                            
+##       Comedy,                                                                                               
+##       Lang_en}                           => {Family}        0.02068503  0.8371608 0.02470855  9.474138   401
+## [7]  {Animation,                                                                                            
+##       Country_United States of America,                                                                     
+##       Lang_en}                           => {Family}        0.02537914  0.7639752 0.03321985  8.645897   492
+## [8]  {Animation,                                                                                            
+##       Country_United States of America}  => {Family}        0.02548231  0.7635240 0.03337460  8.640791   494
+## [9]  {Animation,                                                                                            
+##       Comedy}                            => {Family}        0.02316104  0.7093207 0.03265243  8.027374   449
+## [10] {Adventure,                                                                                            
+##       Animation}                         => {Family}        0.02218096  0.6574924 0.03373569  7.440833   430
+## [11] {Animation,                                                                                            
+##       Lang_en}                           => {Family}        0.03739812  0.6496416 0.05756732  7.351986   725
+## [12] {Country_Japan}                     => {Animation}     0.02305788  0.7315876 0.03151759  7.181041   447
+## [13] {Country_Japan,                                                                                        
+##       Lang_ja}                           => {Animation}     0.02285154  0.7310231 0.03125967  7.175501   443
+## [14] {Adventure,                                                                                            
+##       Family}                            => {Animation}     0.02218096  0.6231884 0.03559270  6.117028   430
+## [15] {,                                                                                                     
+##       Lang_en}                           => {Country_}      0.03213659  0.6838639 0.04699268  3.424796   623
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Filtrado de reglas
+relevantes}\label{filtrado-de-reglas-relevantes}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{reglas\_filtradas }\OtherTok{\textless{}{-}} \FunctionTok{sort}\NormalTok{(reglas1, }\AttributeTok{by =} \StringTok{"lift"}\NormalTok{, }\AttributeTok{decreasing =} \ConstantTok{TRUE}\NormalTok{)}
+
+\FunctionTok{inspect}\NormalTok{(}\FunctionTok{head}\NormalTok{(reglas\_filtradas, }\DecValTok{10}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      lhs                                    rhs          support confidence   coverage     lift count
+## [1]  {Country_United States of America,                                                              
+##       Drama}                             => {Lang_en} 0.08882699  1.0000000 0.08882699 1.662037  1722
+## [2]  {Comedy,                                                                                        
+##       Country_United States of America}  => {Lang_en} 0.09341793  0.9994481 0.09346951 1.661120  1811
+## [3]  {Action,                                                                                        
+##       Country_United States of America}  => {Lang_en} 0.06251934  0.9991756 0.06257093 1.660667  1212
+## [4]  {Country_United States of America,                                                              
+##       Thriller}                          => {Lang_en} 0.06597545  0.9984387 0.06607861 1.659442  1279
+## [5]  {Country_United States of America}  => {Lang_en} 0.25131538  0.9981561 0.25177963 1.658972  4872
+## [6]  {Thriller}                          => {Lang_en} 0.13282781  0.7786513 0.17058702 1.294147  2575
+## [7]  {Family}                            => {Lang_en} 0.06839988  0.7740806 0.08836274 1.286551  1326
+## [8]  {Science Fiction}                   => {Lang_en} 0.06061075  0.7684761 0.07887135 1.277236  1175
+## [9]  {Horror}                            => {Lang_en} 0.09259259  0.7631803 0.12132467 1.268434  1795
+## [10] {Crime}                             => {Lang_en} 0.05937274  0.7474026 0.07943877 1.242211  1151
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Paso 7: Visualización de
+reglas}\label{paso-7-visualizaciuxf3n-de-reglas}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(reglas\_filtradas, }\AttributeTok{method =} \StringTok{"graph"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab2_files/figure-latex/unnamed-chunk-14-1.pdf}}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Interpretación de reglas}\label{interpretaciuxf3n-de-reglas}
+
+Los resultados del algoritmo Apriori (soporte mínimo 0.02 y confianza
+0.6) muestran que el país de producción es un fuerte predictor del
+idioma. Por ejemplo, las reglas que combinan Estados Unidos con géneros
+como Drama, Comedy, Action o Thriller implican casi siempre que la
+película está en inglés (confianzas ≈ 1 y lift ≈ 1.66). Además, la regla
+\{Country\_United States of America\} =\textgreater{} \{Lang\_en\} tiene
+el mayor soporte (0.25), indicando que una cuarta parte del total son
+películas estadounidenses en inglés.
+
+También destacan asociaciones muy fuertes entre Japón y el idioma
+japonés, con lifts superiores a 22, lo que refleja una relación casi
+determinística entre país e idioma. Por otro lado, el género Animation
+aparece frecuentemente vinculado con Family, con lifts entre 7 y 9,
+mostrando que las películas animadas tienden a orientarse al público
+familiar. En conjunto, las reglas revelan patrones claros entre país,
+idioma y ciertos géneros.
+
+\section{Seleccion de Algoritmo de Aprendizaje no
+supervisado}\label{seleccion-de-algoritmo-de-aprendizaje-no-supervisado}
+
+\section{Aprendizaje no supervisado:
+SVD}\label{aprendizaje-no-supervisado-svd}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Conclusiones y Hallazgos}\label{conclusiones-y-hallazgos}
+
+\subsection{Hallazgos del Clustering}\label{hallazgos-del-clustering}
+
+El análisis sobre 4,262 películas reveló 4 grupos naturales, validados
+por Hopkins cercano a 1.0 y silueta promedio de 0.537 para K-Means.
+
+Cluster 1 --- Producciones Convencionales (87\% del catálogo): La
+columna vertebral de la industria. Presupuestos medianos de \$20M e
+ingresos de \$44M (ratio \textasciitilde2.2x). Dominados por Drama,
+Comedia y Thriller. Segmento altamente competitivo con márgenes
+moderados.
+
+Cluster 2 --- Blockbusters Comerciales (11\%): El grupo más rentable,
+con ratio ingreso/presupuesto de \textasciitilde4:1 (\$540M vs \$130M).
+Producciones de Action y Adventure que generan el mayor retorno
+absoluto. La silueta baja (0.14) en algunas películas sugiere que la
+frontera con el Cluster 1 es difusa.
+
+Cluster 3 --- Producciones Marginales (2\%): Datos financieros casi
+nulos, probablemente cortometrajes o registros incompletos en TMDB. No
+aporta valor analítico directo pero es importante identificarlo para no
+contaminar otros análisis.
+
+Cluster 4 --- Fenómenos Virales (7 películas): El hallazgo más
+sorprendente. Spider-Man: No Way Home (popularidad 8,444), Eternals
+(11,475) y Sing 2 (6,056) forman un grupo único con popularidad viral
+masiva desproporcionada respecto a sus cifras financieras, impulsada por
+su pertenencia a franquicias del MCU y Sony.
+
+Conclusión estratégica para CineVision Studios: La popularidad y el
+éxito comercial son dimensiones independientes. El Cluster 4 demuestra
+que pertenecer a franquicias con comunidades de fans activas genera un
+engagement que supera incluso al de blockbusters de mayor presupuesto.
+Invertir en propiedad intelectual reconocible y construcción de
+universos narrativos a largo plazo puede ser tan rentable como competir
+directamente en presupuesto con los grandes estudios.
+
+\end{document}

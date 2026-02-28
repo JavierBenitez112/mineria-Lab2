@@ -563,23 +563,118 @@ fviz_pca_var(compPrinc,
 ```
 
 
+
 # Algoritmo A Priori
 
-## Paso 1: Contexto y Objetivo
 
-## Paso 2: Items mas frecuentes
+El objetivo del algoritmo A Priori es descubrir patrones frecuentes de co-ocurrencia entre características categóricas de las películas. 
 
-## Paso 3: Conjunto de Items frecuentes
+Se analizarán principalmente:
 
-## Paso 4: Análisis del soporte de los conjuntos
+- Géneros
+- País de producción
+- Idioma original
 
-## Paso 5: Generación de reglas de asociación
+Buscamos reglas del tipo:
 
-## Paso 6: Soporte, confianza y lift
+Si una película pertenece al género X → entonces también suele pertenecer al género Y.
 
-## Paso 7: Filtrado de reglas relevantes
+---
 
-## Paso 8: Visualización de resultados
+## Preparación de datos
+
+```{r}
+library(arules)
+library(arulesViz)
+
+movies_apriori <- movies %>%
+  select(title, genres, productionCountry, originalLanguage) %>%
+  filter(!is.na(genres))
+
+movies_apriori <- movies_apriori %>%
+  tidyr::separate_rows(genres, sep = "\\|")
+
+transactions_list <- movies_apriori %>%
+  group_by(title) %>%
+  summarise(items = list(unique(c(genres,
+                                   paste0("Country_", productionCountry),
+                                   paste0("Lang_", originalLanguage)))))
+
+transacciones <- as(transactions_list$items, "transactions")
+
+summary(transacciones)
+```
+
+---
+
+## Items más frecuentes
+
+```{r items_frecuentes}
+itemFrequencyPlot(transacciones,
+                  topN = 15,
+                  type = "absolute",
+                  col = "steelblue",
+                  main = "Items más frecuentes")
+```
+
+---
+
+## Generación de reglas (Primer intento)
+
+```{r}
+reglas1 <- apriori(transacciones,
+                   parameter = list(supp = 0.05,
+                                    conf = 0.7,
+                                    minlen = 2))
+
+summary(reglas1)
+
+inspect(head(sort(reglas1, by = "lift"), 10))
+```
+
+---
+
+## Paso 5: Segundo intento (más flexible)
+
+```{r}
+reglas2 <- apriori(transacciones,
+                   parameter = list(supp = 0.02,
+                                    conf = 0.6,
+                                    minlen = 2))
+
+summary(reglas2)
+
+reglas_ordenadas <- sort(reglas2, by = "lift", decreasing = TRUE)
+
+inspect(head(reglas_ordenadas, 15))
+```
+
+---
+
+## Filtrado de reglas relevantes
+
+```{r}
+reglas_filtradas <- sort(reglas1, by = "lift", decreasing = TRUE)
+
+inspect(head(reglas_filtradas, 10))
+```
+
+---
+
+## Paso 7: Visualización de reglas
+
+```{r}
+plot(reglas_filtradas, method = "graph")
+```
+
+---
+
+## Interpretación de reglas
+
+Los resultados del algoritmo Apriori (soporte mínimo 0.02 y confianza 0.6) muestran que el país de producción es un fuerte predictor del idioma. Por ejemplo, las reglas que combinan Estados Unidos con géneros como Drama, Comedy, Action o Thriller implican casi siempre que la película está en inglés (confianzas ≈ 1 y lift ≈ 1.66). Además, la regla {Country_United States of America} => {Lang_en} tiene el mayor soporte (0.25), indicando que una cuarta parte del total son películas estadounidenses en inglés.
+
+También destacan asociaciones muy fuertes entre Japón y el idioma japonés, con lifts superiores a 22, lo que refleja una relación casi determinística entre país e idioma. Por otro lado, el género Animation aparece frecuentemente vinculado con Family, con lifts entre 7 y 9, mostrando que las películas animadas tienden a orientarse al público familiar. En conjunto, las reglas revelan patrones claros entre país, idioma y ciertos géneros.
+
 
 
 
