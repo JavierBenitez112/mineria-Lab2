@@ -517,7 +517,6 @@ fviz_pca_var(compPrinc,
 
 # Algoritmo A Priori
 
-## Paso 1: Contexto y Objetivo
 
 El objetivo del algoritmo A Priori es descubrir patrones frecuentes de co-ocurrencia entre características categóricas de las películas. 
 
@@ -533,9 +532,9 @@ Si una película pertenece al género X → entonces también suele pertenecer a
 
 ---
 
-## Paso 2: Preparación de datos
+## Preparación de datos
 
-```{r apriori_prep}
+```{r}
 library(arules)
 library(arulesViz)
 
@@ -559,7 +558,7 @@ summary(transacciones)
 
 ---
 
-## Paso 3: Items más frecuentes
+## Items más frecuentes
 
 ```{r items_frecuentes}
 itemFrequencyPlot(transacciones,
@@ -571,9 +570,9 @@ itemFrequencyPlot(transacciones,
 
 ---
 
-## Paso 4: Generación de reglas (Primer intento)
+## Generación de reglas (Primer intento)
 
-```{r apriori_intento1}
+```{r}
 reglas1 <- apriori(transacciones,
                    parameter = list(supp = 0.05,
                                     conf = 0.7,
@@ -588,7 +587,7 @@ inspect(head(sort(reglas1, by = "lift"), 10))
 
 ## Paso 5: Segundo intento (más flexible)
 
-```{r apriori_intento2}
+```{r}
 reglas2 <- apriori(transacciones,
                    parameter = list(supp = 0.02,
                                     conf = 0.6,
@@ -603,10 +602,10 @@ inspect(head(reglas_ordenadas, 15))
 
 ---
 
-## Paso 6: Filtrado de reglas relevantes
+## Filtrado de reglas relevantes
 
-```{r reglas_filtradas}
-reglas_filtradas <- subset(reglas_ordenadas, lift > 1.2)
+```{r}
+reglas_filtradas <- sort(reglas1, by = "lift", decreasing = TRUE)
 
 inspect(head(reglas_filtradas, 10))
 ```
@@ -615,27 +614,17 @@ inspect(head(reglas_filtradas, 10))
 
 ## Paso 7: Visualización de reglas
 
-```{r reglas_plot}
-plot(reglas_filtradas, method = "graph", engine = "htmlwidget")
+```{r}
+plot(reglas_filtradas, method = "graph")
 ```
 
 ---
 
-## Paso 8: Interpretación de reglas
+## Interpretación de reglas
 
-Las reglas más interesantes son aquellas que presentan:
+Los resultados del algoritmo Apriori (soporte mínimo 0.02 y confianza 0.6) muestran que el país de producción es un fuerte predictor del idioma. Por ejemplo, las reglas que combinan Estados Unidos con géneros como Drama, Comedy, Action o Thriller implican casi siempre que la película está en inglés (confianzas ≈ 1 y lift ≈ 1.66). Además, la regla {Country_United States of America} => {Lang_en} tiene el mayor soporte (0.25), indicando que una cuarta parte del total son películas estadounidenses en inglés.
 
-- Soporte suficiente (no demasiado bajo)
-- Confianza alta
-- Lift mayor que 1 (idealmente > 1.2)
-
-El lift indica dependencia real entre los ítems. 
-Un lift > 1 significa que la ocurrencia conjunta es mayor a la esperada si fueran independientes.
-
-Reducir el soporte permitió encontrar relaciones más específicas entre géneros, mientras que mantener una confianza moderada evitó reglas débiles.
-
-Se deben analizar especialmente las reglas con mayor lift, ya que representan asociaciones estructuralmente fuertes dentro del mercado cinematográfico.
-
+También destacan asociaciones muy fuertes entre Japón y el idioma japonés, con lifts superiores a 22, lo que refleja una relación casi determinística entre país e idioma. Por otro lado, el género Animation aparece frecuentemente vinculado con Family, con lifts entre 7 y 9, mostrando que las películas animadas tienden a orientarse al público familiar. En conjunto, las reglas revelan patrones claros entre país, idioma y ciertos géneros.
 
 
 # Seleccion de Algoritmo de Aprendizaje no supervisado
